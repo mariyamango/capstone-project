@@ -22,7 +22,9 @@ function Home(){
         <div className="container">
             <h1>Cars List:</h1>
             <ul>
-                {data}
+                {data.map((car, index) => (
+                    <li key={index}>{car["model"]} - {car["year"]} - {car["vin"]}</li>
+                ))}
             </ul>
         </div>
     </>

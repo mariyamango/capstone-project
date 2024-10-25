@@ -5,6 +5,7 @@ import com.example.backend.dto.CreateCarRequest;
 import com.example.backend.service.CarHealthService;
 import com.example.backend.service.IdGeneratorService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,7 +33,8 @@ public class CarHealthController {
     }
 
     @DeleteMapping("/cars/{id}")
-    public void deleteCar(@PathVariable String id) {
+    public ResponseEntity<Void> deleteCar(@PathVariable String id) {
         carHealthService.deleteCarById(id);
+        return ResponseEntity.noContent().build();
     }
 }

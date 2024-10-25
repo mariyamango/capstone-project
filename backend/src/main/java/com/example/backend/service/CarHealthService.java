@@ -32,6 +32,7 @@ public class CarHealthService {
     }
 
     public void deleteCarById(String id) {
+        carHealthRepository.findById(id).orElseThrow(NoSuchElementException::new);
         carHealthRepository.deleteById(id);
     }
 }

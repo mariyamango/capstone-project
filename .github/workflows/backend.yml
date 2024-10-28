@@ -1,4 +1,4 @@
-name: SonarCloud
+name: mariyamango_capstone-project-backend
 on:
   push:
     branches:

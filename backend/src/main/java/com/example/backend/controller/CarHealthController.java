@@ -4,35 +4,35 @@ import com.example.backend.dto.CarDto;
 import com.example.backend.dto.CreateCarRequest;
 import com.example.backend.service.CarHealthService;
 import com.example.backend.service.IdGeneratorService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@AllArgsConstructor
-@RequestMapping("/api")
+@RequiredArgsConstructor
+@RequestMapping("/api/cars")
 public class CarHealthController {
     private final CarHealthService carHealthService;
     private final IdGeneratorService idGeneratorService;
 
-    @GetMapping("/cars")
+    @GetMapping
     public List<CarDto> cars() {
         return carHealthService.getAllCars();
     }
 
-    @GetMapping("/cars/{id}")
+    @GetMapping("/{id}")
     public CarDto car(@PathVariable String id) {
         return carHealthService.getCarById(id);
     }
 
-    @PostMapping("/cars")
+    @PostMapping
     public CarDto createCar(@RequestBody CreateCarRequest createCarRequest) {
         return carHealthService.createCar(new CarDto(idGeneratorService.generateId(),createCarRequest.model(),createCarRequest.year(),createCarRequest.vin()));
     }
 
-    @DeleteMapping("/cars/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCar(@PathVariable String id) {
         carHealthService.deleteCarById(id);
         return ResponseEntity.noContent().build();

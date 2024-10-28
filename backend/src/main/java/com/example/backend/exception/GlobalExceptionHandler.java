@@ -34,8 +34,8 @@ public class GlobalExceptionHandler {
         return new ErrorMessage(e.getMessage());
     }
 
-    public static void logExceptions(Exception e) {
-        log.error("Exceptions caught in global exception handler {}", String.valueOf(e));
+    private void logExceptions(Exception e) {
+        log.error("Exceptions caught in global exception handler: {}", e.getMessage(), e);
     }
 
 }

@@ -31,6 +31,13 @@ public class CarHealthService {
         return carDto;
     }
 
+    public CarDto updateCar(String id, CarDto carDto) {
+        Car car = carHealthRepository.findById(id).orElseThrow(NoSuchElementException::new);
+        Car newCar = new Car(car.id(), carDto.model(), carDto.year(), carDto.vin());
+        carHealthRepository.save(newCar);
+        return carDto;
+    }
+
     public void deleteCarById(String id) {
         carHealthRepository.findById(id).orElseThrow(NoSuchElementException::new);
         carHealthRepository.deleteById(id);

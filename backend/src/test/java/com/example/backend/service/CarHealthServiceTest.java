@@ -1,122 +1,113 @@
 package com.example.backend.service;
 
+import com.example.backend.dto.CarDto;
 import com.example.backend.model.Car;
 import com.example.backend.repository.CarHealthRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
 class CarHealthServiceTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-    @MockBean
+    @Mock
     private CarHealthRepository carHealthRepository;
 
+    @InjectMocks
+    private CarHealthService carHealthService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
     @Test
-    void getAllCars_ShouldReturnCarDtoList() throws Exception {
-        // GIVEN
-        Car car1 = new Car("1", "Model S", 2020, "VIN123");
-        Car car2 = new Car("2", "Model X", 2021, "VIN456");
-        when(carHealthRepository.findAll()).thenReturn(List.of(car1, car2));
-        // WHEN & THEN
-        mockMvc.perform(get("/api/cars")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].model").value("Model S"));
+    void getAllCars_shouldReturnCarList() {
+        List<Car> cars = List.of(
+                new Car("1", "Model X", 2020, "VIN123"),
+                new Car("2", "Model Y", 2021, "VIN456")
+        );
+        when(carHealthRepository.findAll()).thenReturn(cars);
+        List<CarDto> result = carHealthService.getAllCars();
+        assertEquals(2, result.size());
+        assertEquals("Model X", result.get(0).model());
+        assertEquals("VIN456", result.get(1).vin());
         verify(carHealthRepository, times(1)).findAll();
     }
 
     @Test
-    void getCarById_ShouldReturnCarDto_WhenCarExists() throws Exception {
-        // GIVEN
-        String carId = "1";
-        Car car = new Car(carId, "Model S", 2020, "VIN123");
-        when(carHealthRepository.findById(carId)).thenReturn(Optional.of(car));
-        // WHEN & THEN
-        mockMvc.perform(get("/api/cars/{id}", carId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(carId))
-                .andExpect(jsonPath("$.model").value("Model S"));
-        verify(carHealthRepository, times(1)).findById(carId);
+    void getCarById_shouldReturnCar_whenCarExists() {
+        Car car = new Car("1", "Model X", 2020, "VIN123");
+        when(carHealthRepository.findById("1")).thenReturn(Optional.of(car));
+        CarDto result = carHealthService.getCarById("1");
+        assertEquals("Model X", result.model());
+        assertEquals("VIN123", result.vin());
+        verify(carHealthRepository, times(1)).findById("1");
     }
 
     @Test
-    void getCarById_ShouldThrowException_WhenCarNotFound() throws Exception {
-        // GIVEN
-        String carId = "1";
-        when(carHealthRepository.findById(carId)).thenReturn(Optional.empty());
-        // WHEN & THEN
-        mockMvc.perform(get("/api/cars/{id}", carId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
-
-        verify(carHealthRepository, times(1)).findById(carId);
+    void getCarById_shouldThrowException_whenCarNotFound() {
+        when(carHealthRepository.findById("999")).thenReturn(Optional.empty());
+        assertThrows(NoSuchElementException.class, () -> carHealthService.getCarById("999"));
+        verify(carHealthRepository, times(1)).findById("999");
     }
 
     @Test
-    void createCar_ShouldSaveAndReturnCarDto() throws Exception {
-        // GIVEN
-        Car car = new Car("1", "Model S", 2020, "VIN123");
+    void createCar_shouldSaveAndReturnCar() {
+        CarDto carDto = new CarDto("3", "Model Z", 2022, "VIN789");
+        Car car = new Car("3", "Model Z", 2022, "VIN789");
         when(carHealthRepository.save(any(Car.class))).thenReturn(car);
-        // WHEN & THEN
-        mockMvc.perform(post("/api/cars")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                    	"id":"1",
-                                    	"model":"Model S",
-                                    	"year":2020,
-                                    	"vin":"VIN123"
-                                }
-                                """))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.model").value("Model S"));
+        CarDto result = carHealthService.createCar(carDto);
+        assertEquals("Model Z", result.model());
+        assertEquals("VIN789", result.vin());
         verify(carHealthRepository, times(1)).save(any(Car.class));
     }
 
     @Test
-    void deleteCarById_ShouldDeleteCar_WhenCarExists() throws Exception {
-        // GIVEN
-        String carId = "1";
-        doReturn(Optional.of(new Car(carId, "Model S", 2020, "VIN123"))).when(carHealthRepository).findById(carId);
-        doNothing().when(carHealthRepository).deleteById(carId);
-        // WHEN & THEN
-        mockMvc.perform(delete("/api/cars/{id}", carId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNoContent());
-        verify(carHealthRepository, times(1)).findById(carId);
-        verify(carHealthRepository, times(1)).deleteById(carId);
+    void updateCar_shouldUpdateAndReturnUpdatedCar_whenCarExists() {
+        Car existingCar = new Car("1", "Model X", 2020, "VIN123");
+        CarDto updatedCarDto = new CarDto("1", "Model S", 2021, "VIN1234");
+        Car updatedCar = new Car("1", "Model S", 2021, "VIN1234");
+        when(carHealthRepository.findById("1")).thenReturn(Optional.of(existingCar));
+        when(carHealthRepository.save(any(Car.class))).thenReturn(updatedCar);
+        CarDto result = carHealthService.updateCar("1", updatedCarDto);
+        assertEquals("Model S", result.model());
+        assertEquals("VIN1234", result.vin());
+        verify(carHealthRepository, times(1)).findById("1");
+        verify(carHealthRepository, times(1)).save(any(Car.class));
     }
 
     @Test
-    void deleteCarById_ShouldReturn404_WhenCarNotFound() throws Exception {
-        // GIVEN
-        String carId = "1";
-        when(carHealthRepository.findById(carId)).thenReturn(Optional.empty());
-        // WHEN & THEN
-        mockMvc.perform(delete("/api/cars/{id}", carId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
-        verify(carHealthRepository, times(1)).findById(carId);
-        verify(carHealthRepository, never()).deleteById(carId);
+    void updateCar_shouldThrowException_whenCarNotFound() {
+        CarDto updatedCarDto = new CarDto("999", "Model Z", 2022, "VIN789");
+        when(carHealthRepository.findById("999")).thenReturn(Optional.empty());
+        assertThrows(NoSuchElementException.class, () -> carHealthService.updateCar("999", updatedCarDto));
+        verify(carHealthRepository, times(1)).findById("999");
+        verify(carHealthRepository, never()).save(any(Car.class));
+    }
+
+    @Test
+    void deleteCarById_shouldDeleteCar_whenCarExists() {
+        Car existingCar = new Car("1", "Model X", 2020, "VIN123");
+        when(carHealthRepository.findById("1")).thenReturn(Optional.of(existingCar));
+        carHealthService.deleteCarById("1");
+        verify(carHealthRepository, times(1)).findById("1");
+        verify(carHealthRepository, times(1)).deleteById("1");
+    }
+
+    @Test
+    void deleteCarById_shouldThrowException_whenCarNotFound() {
+        when(carHealthRepository.findById("999")).thenReturn(Optional.empty());
+        assertThrows(NoSuchElementException.class, () -> carHealthService.deleteCarById("999"));
+        verify(carHealthRepository, times(1)).findById("999");
+        verify(carHealthRepository, never()).deleteById(anyString());
     }
 }

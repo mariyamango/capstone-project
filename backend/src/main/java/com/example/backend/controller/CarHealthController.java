@@ -32,6 +32,11 @@ public class CarHealthController {
         return carHealthService.createCar(new CarDto(idGeneratorService.generateId(),createCarRequest.model(),createCarRequest.year(),createCarRequest.vin()));
     }
 
+    @PutMapping("/{id}")
+    public CarDto updateCar(@PathVariable String id, @RequestBody CarDto carDto) {
+        return carHealthService.updateCar(id, carDto);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCar(@PathVariable String id) {
         carHealthService.deleteCarById(id);

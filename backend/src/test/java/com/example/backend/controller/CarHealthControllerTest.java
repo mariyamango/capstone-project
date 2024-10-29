@@ -102,7 +102,7 @@ class CarHealthControllerTest {
     }
 
     @Test
-    public void updateCar_shouldUpdateExistingCar() throws Exception {
+    void updateCar_shouldUpdateExistingCar() throws Exception {
         //GIVEN
         String id = "123";
         CarDto carDto = new CarDto("123", "Model S", 2023, "VIN123456");
@@ -119,7 +119,7 @@ class CarHealthControllerTest {
     }
 
     @Test
-    public void updateCar_shouldThrowException() throws Exception {
+    void updateCar_shouldThrowException() throws Exception {
         //GIVEN
         String id = "123";
         CarDto carDto = new CarDto("123", "Model S", 2023, "VIN123456");

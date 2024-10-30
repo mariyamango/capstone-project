@@ -26,9 +26,9 @@ public class WorkService {
 
     public WorkDto updateWork(String id, WorkDto workDto) {
         Work work = workRepository.findById(id).orElseThrow(NoSuchElementException::new);
-        Work newWork = new Work(work.id(), workDto.carId(), workDto.type(), workDto.mileage(), workDto.date(), workDto.price());
+        Work newWork = new Work(id, workDto.carId(), workDto.type(), workDto.mileage(), workDto.date(), workDto.price());
         workRepository.save(newWork);
-        return workDto;
+        return new WorkDto(newWork.id(), newWork.carId(), newWork.type(), newWork.mileage(), newWork.date(), newWork.price());
     }
 
     public void deleteWorkById(String id) {

@@ -1,13 +1,14 @@
 import axios from 'axios';
-import { useEffect, useState } from "react";
-import { Card, Col, Row, Container, Button, Modal, Form } from 'react-bootstrap';
-import { Car } from "./types/Car.tsx";
+import {useEffect, useState} from "react";
+import {Button, Card, Col, Container, Form, Modal, Row} from 'react-bootstrap';
+import {Car} from "./types/Car.tsx";
+import {Link} from "react-router-dom";
 
 function Home() {
     const [data, setData] = useState<Car[]>([]);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
-    const [newCar, setNewCar] = useState({ model: '', year: 0, vin: '' });
+    const [newCar, setNewCar] = useState({model: '', year: 0, vin: ''});
     const [editableCar, setEditableCar] = useState<Car | null>(null);
 
     const fetchData = async () => {
@@ -24,7 +25,7 @@ function Home() {
             const response = await axios.post("/api/cars", newCar);
             setData([...data, response.data]);
             setShowAddModal(false);
-            setNewCar({ model: '', year: 0, vin: '' });
+            setNewCar({model: '', year: 0, vin: ''});
         } catch (error) {
             console.log('Error adding car', error);
         }
@@ -41,7 +42,7 @@ function Home() {
                 const response = await axios.put(`/api/cars/${editableCar.id}`, editableCar);
                 setData(data.map(car => (car.id === editableCar.id ? response.data : car)));
                 setShowEditModal(false);
-                setEditableCar(null); // Сброс состояния
+                setEditableCar(null);
             } catch (error) {
                 console.log('Error editing car', error);
             }
@@ -72,21 +73,26 @@ function Home() {
                 {data.map((car) => (
                     <Col key={car.id}>
                         <Card className="h-100">
-                            <Card.Body>
-                                <Card.Title>{car.model}</Card.Title>
-                                <Card.Text><strong>Year:</strong> {car.year}</Card.Text>
-                                <Card.Text><strong>VIN:</strong> {car.vin}</Card.Text>
-                                <Button variant="warning" onClick={() => handleEditCarOpen(car)}>Edit</Button>{' '}
-                                <Button variant="danger" onClick={() => handleDeleteCar(car.id)}>Delete</Button>
-                            </Card.Body>
+                            <Link to={`/car/${car.id}`} style={{textDecoration: 'none', color: 'inherit'}}>
+                                <Card.Body>
+                                    <Card.Title>{car.model}</Card.Title>
+                                    <Card.Text><strong>Year:</strong> {car.year}</Card.Text>
+                                    <Card.Text><strong>VIN:</strong> {car.vin}</Card.Text>
+                                </Card.Body>
+                            </Link>
+                            <Card.Footer>
+                                <div className="d-flex justify-content-between">
+                                    <Button variant="warning" onClick={() => handleEditCarOpen(car)}>Edit</Button>
+                                    <Button variant="danger" onClick={() => handleDeleteCar(car.id)}>Delete</Button>
+                                </div>
+                            </Card.Footer>
                         </Card>
                     </Col>
                 ))}
             </Row>
 
-            {/* Add Car Modal */}
             <Modal show={showAddModal} onHide={() => setShowAddModal(false)}>
-                <Modal.Header closeButton>
+            <Modal.Header closeButton>
                     <Modal.Title>Add New Car</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
@@ -94,17 +100,17 @@ function Home() {
                         <Form.Group controlId="formModel">
                             <Form.Label>Model</Form.Label>
                             <Form.Control type="text" placeholder="Enter model"
-                                          onChange={(e) => setNewCar({...newCar, model: e.target.value})} />
+                                          onChange={(e) => setNewCar({...newCar, model: e.target.value})}/>
                         </Form.Group>
                         <Form.Group controlId="formYear">
                             <Form.Label>Year</Form.Label>
                             <Form.Control type="number" placeholder="Enter year"
-                                          onChange={(e) => setNewCar({...newCar, year: Number(e.target.value)})} />
+                                          onChange={(e) => setNewCar({...newCar, year: Number(e.target.value)})}/>
                         </Form.Group>
                         <Form.Group controlId="formVin">
                             <Form.Label>VIN</Form.Label>
                             <Form.Control type="text" placeholder="Enter VIN"
-                                          onChange={(e) => setNewCar({...newCar, vin: e.target.value})} />
+                                          onChange={(e) => setNewCar({...newCar, vin: e.target.value})}/>
                         </Form.Group>
                     </Form>
                 </Modal.Body>
@@ -114,7 +120,6 @@ function Home() {
                 </Modal.Footer>
             </Modal>
 
-            {/* Edit Car Modal */}
             <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>Edit Car</Modal.Title>
@@ -125,17 +130,23 @@ function Home() {
                             <Form.Group controlId="formEditModel">
                                 <Form.Label>Model</Form.Label>
                                 <Form.Control type="text" placeholder="Enter model" value={editableCar.model}
-                                              onChange={(e) => setEditableCar({...editableCar, model: e.target.value})} />
+                                              onChange={(e) => setEditableCar({
+                                                  ...editableCar,
+                                                  model: e.target.value
+                                              })}/>
                             </Form.Group>
                             <Form.Group controlId="formEditYear">
                                 <Form.Label>Year</Form.Label>
                                 <Form.Control type="number" placeholder="Enter year" value={editableCar.year}
-                                              onChange={(e) => setEditableCar({...editableCar, year: Number(e.target.value)})} />
+                                              onChange={(e) => setEditableCar({
+                                                  ...editableCar,
+                                                  year: Number(e.target.value)
+                                              })}/>
                             </Form.Group>
                             <Form.Group controlId="formEditVin">
                                 <Form.Label>VIN</Form.Label>
                                 <Form.Control type="text" placeholder="Enter VIN" value={editableCar.vin}
-                                              onChange={(e) => setEditableCar({...editableCar, vin: e.target.value})} />
+                                              onChange={(e) => setEditableCar({...editableCar, vin: e.target.value})}/>
                             </Form.Group>
                         </Form>
                     )}

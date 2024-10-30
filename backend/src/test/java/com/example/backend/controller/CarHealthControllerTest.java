@@ -2,8 +2,10 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.CarDto;
 import com.example.backend.dto.CreateCarRequest;
+import com.example.backend.dto.WorkDto;
 import com.example.backend.service.CarHealthService;
 import com.example.backend.service.IdGeneratorService;
+import com.example.backend.service.WorkService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -16,9 +18,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -35,6 +39,9 @@ class CarHealthControllerTest {
 
     @MockBean
     private CarHealthService carHealthService;
+
+    @MockBean
+    private WorkService workService;
 
     @MockBean
     private IdGeneratorService idGeneratorService;
@@ -155,5 +162,51 @@ class CarHealthControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Car not found with id: " + nonExistentCarId));
         verify(carHealthService, times(1)).deleteCarById(nonExistentCarId);
+    }
+
+    @Test
+    void work_shouldReturnListOfWorkDtos() throws Exception {
+        // GIVEN
+        String carId = "1";
+        List<WorkDto> works = Arrays.asList(
+                new WorkDto("1", carId, "Oil Change", 5000, "2023-01-10", 50.0),
+                new WorkDto("2", carId, "Tire Replacement", 8000, "2023-02-15", 120.0)
+        );
+        when(workService.getAllWorksByCarId(carId)).thenReturn(works);
+
+        // WHEN THEN
+        mockMvc.perform(get("/api/works/{carId}", carId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id").value("1"))
+                .andExpect(jsonPath("$[0].carId").value(carId))
+                .andExpect(jsonPath("$[0].type").value("Oil Change"))
+                .andExpect(jsonPath("$[0].mileage").value(5000))
+                .andExpect(jsonPath("$[0].date").value("2023-01-10"))
+                .andExpect(jsonPath("$[0].price").value(50.0))
+                .andExpect(jsonPath("$[1].id").value("2"))
+                .andExpect(jsonPath("$[1].carId").value(carId))
+                .andExpect(jsonPath("$[1].type").value("Tire Replacement"))
+                .andExpect(jsonPath("$[1].mileage").value(8000))
+                .andExpect(jsonPath("$[1].date").value("2023-02-15"))
+                .andExpect(jsonPath("$[1].price").value(120.0));
+
+        verify(workService, times(1)).getAllWorksByCarId(carId);
+    }
+
+    @Test
+    void work_shouldReturnEmptyListWhenNoWorksFound() throws Exception {
+        // GIVEN
+        String carId = "2";
+        when(workService.getAllWorksByCarId(carId)).thenReturn(Collections.emptyList());
+
+        // WHEN THEN
+        mockMvc.perform(get("/api/works/{carId}", carId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+
+        verify(workService, times(1)).getAllWorksByCarId(carId);
     }
 }

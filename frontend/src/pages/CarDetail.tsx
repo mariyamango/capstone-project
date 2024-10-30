@@ -58,12 +58,14 @@ function CarDetail() {
 
                             return (
                                 <div key={type} className="work-group">
-                                    <h5
+                                    <button
                                         onClick={() => setExpanded({...expanded, [type]: !expanded[type]})}
-                                        style={{cursor: 'pointer', color: 'darkblue'}}
+                                        className="clickable-header"
+                                        role="heading"
+                                        aria-level="5"
                                     >
-                                        {type} — Last work: {new Date(lastWork.date).toLocaleDateString()}
-                                    </h5>
+                                        {type} — Last work: {new Date(workList[0].date).toLocaleDateString()}
+                                    </button>
 
                                     {!expanded[type] && (
                                         <p>

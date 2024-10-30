@@ -32,7 +32,7 @@ public class WorkService {
     }
 
     public void deleteWorkById(String id) {
-        workRepository.findById(id).orElseThrow(NoSuchElementException::new);
-        workRepository.deleteById(id);
+        Work work = workRepository.findById(id).orElseThrow(NoSuchElementException::new);
+        workRepository.delete(work);
     }
 }

@@ -117,15 +117,18 @@ class WorkServiceTest {
 
     @Test
     void deleteWorkById_shouldDeleteWork_whenWorkExists() {
-        //GIVEN
-        Work existingWork = new Work("generated-id","generated-carId","Tires change",10000,LocalDate.of(2023,1,10),50.0);
+        // GIVEN
+        Work existingWork = new Work("generated-id", "generated-carId", "Tires change", 10000, LocalDate.of(2023, 1, 10), 50.0);
         when(workRepository.findById("generated-id")).thenReturn(Optional.of(existingWork));
-        //WHEN
+
+        // WHEN
         workService.deleteWorkById("generated-id");
-        //THEN
+
+        // THEN
         verify(workRepository, times(1)).findById("generated-id");
-        verify(workRepository, times(1)).deleteById("generated-id");
+        verify(workRepository, times(1)).delete(existingWork);
     }
+
 
     @Test
     void deleteWorkById_shouldThrowException_whenWorkNotFound() {
@@ -134,6 +137,6 @@ class WorkServiceTest {
         //WHEN THEN
         assertThrows(NoSuchElementException.class, () -> workService.deleteWorkById("not-existing-id"));
         verify(workRepository, times(1)).findById("not-existing-id");
-        verify(workRepository, never()).deleteById(anyString());
+        verify(workRepository, never()).delete(any(Work.class));
     }
 }

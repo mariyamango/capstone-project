@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.CarDto;
 import com.example.backend.dto.CreateCarRequest;
+import com.example.backend.dto.CreateWorkRequest;
 import com.example.backend.dto.WorkDto;
 import com.example.backend.service.CarHealthService;
 import com.example.backend.service.IdGeneratorService;
@@ -17,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -169,8 +171,8 @@ class CarHealthControllerTest {
         // GIVEN
         String carId = "1";
         List<WorkDto> works = Arrays.asList(
-                new WorkDto("1", carId, "Oil Change", 5000, "2023-01-10", 50.0),
-                new WorkDto("2", carId, "Tire Replacement", 8000, "2023-02-15", 120.0)
+                new WorkDto("1", carId, "Oil Change", 5000, LocalDate.of(2023,1,10), 50.0),
+                new WorkDto("2", carId, "Tire Replacement", 8000, LocalDate.of(2023,2,15), 120.0)
         );
         when(workService.getAllWorksByCarId(carId)).thenReturn(works);
 
@@ -208,5 +210,86 @@ class CarHealthControllerTest {
                 .andExpect(jsonPath("$", hasSize(0)));
 
         verify(workService, times(1)).getAllWorksByCarId(carId);
+    }
+
+    @Test
+    void createWork_shouldCreateNewWork() throws Exception {
+        //GIVEN
+        CreateWorkRequest createWorkRequest = new CreateWorkRequest("generated-carId","Tires change",10000, LocalDate.of(2023,1,10), 50.0);
+        WorkDto mockWork = new WorkDto("generated-id", "generated-carId","Tires change",10000, LocalDate.of(2023,1,10), 50.0);
+        when(idGeneratorService.generateId()).thenReturn("generated-id");
+        when(workService.createWork(any(WorkDto.class))).thenReturn(mockWork);
+        //WHEN THEN
+        mockMvc.perform(post("/api/works")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createWorkRequest)))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value("generated-id"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.carId").value("generated-carId"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.type").value("Tires change"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.mileage").value(10000))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.date").value("2023-01-10"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.price").value("50.0"));
+
+        verify(idGeneratorService, times(1)).generateId();
+        verify(workService, times(1)).createWork(any(WorkDto.class));
+    }
+
+    @Test
+    void updateWork_shouldUpdateExistingWork() throws Exception {
+        //GIVEN
+        String id = "generated-id";
+        WorkDto workDto = new WorkDto("generated-id","generated-carId","Tires change",10000, LocalDate.of(2023,1,10), 50.0);
+        when(workService.updateWork(eq(id), any(WorkDto.class))).thenReturn(workDto);
+        //WHEN THEN
+        mockMvc.perform(put("/api/works/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(workDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("generated-id"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.carId").value("generated-carId"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.type").value("Tires change"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.mileage").value(10000))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.date").value("2023-01-10"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.price").value("50.0"));
+    }
+
+    @Test
+    void updateWork_shouldThrowException() throws Exception {
+        //GIVEN
+        String id = "generated-id";
+        WorkDto workDto = new WorkDto("generated-id","generated-carId","Tires change",10000, LocalDate.of(2023,1,10), 50.0);
+        when(workService.updateWork(eq(id), any(WorkDto.class)))
+                .thenThrow(new NoSuchElementException("Work not found"));
+        //WHEN THEN
+        mockMvc.perform(put("/api/works/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(workDto)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteWork_shouldDeleteExistingWork() throws Exception {
+        //GIVEN
+        String id = "1";
+        Mockito.doNothing().when(workService).deleteWorkById(id);
+        //WHEN THEN
+        mockMvc.perform(delete("/api/works/{id}", id))
+                .andExpect(status().isNoContent());
+        verify(workService, times(1)).deleteWorkById(id);
+    }
+
+    @Test
+    void deleteWork_shouldThrowNoSuchElementException() throws Exception {
+        //GIVEN
+        String nonExistentWorkId = "not-existent-id";
+        doThrow(new NoSuchElementException("Work not found with id: " + nonExistentWorkId))
+                .when(workService).deleteWorkById(nonExistentWorkId);
+        //WHEN THEN
+        mockMvc.perform(delete("/api/works/{id}", nonExistentWorkId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Work not found with id: " + nonExistentWorkId));
+        verify(workService, times(1)).deleteWorkById(nonExistentWorkId);
     }
 }

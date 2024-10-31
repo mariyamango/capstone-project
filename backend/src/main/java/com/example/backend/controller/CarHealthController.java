@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.CarDto;
 import com.example.backend.dto.CreateCarRequest;
+import com.example.backend.dto.CreateWorkRequest;
 import com.example.backend.dto.WorkDto;
 import com.example.backend.service.CarHealthService;
 import com.example.backend.service.IdGeneratorService;
@@ -49,5 +50,21 @@ public class CarHealthController {
     @GetMapping("/works/{carId}")
     public List<WorkDto> work(@PathVariable String carId) {
         return workService.getAllWorksByCarId(carId);
+    }
+
+    @PostMapping("/works")
+    public WorkDto addWork(@RequestBody CreateWorkRequest createWorkRequest) {
+        return workService.createWork(new WorkDto(idGeneratorService.generateId(), createWorkRequest.carId(), createWorkRequest.type(), createWorkRequest.mileage(), createWorkRequest.date(), createWorkRequest.price()));
+    }
+
+    @PutMapping("/works/{id}")
+    public WorkDto updateWork(@PathVariable String id, @RequestBody WorkDto workDto) {
+        return workService.updateWork(id, workDto);
+    }
+
+    @DeleteMapping("/works/{id}")
+    public ResponseEntity<Void> deleteWork(@PathVariable String id) {
+        workService.deleteWorkById(id);
+        return ResponseEntity.noContent().build();
     }
 }

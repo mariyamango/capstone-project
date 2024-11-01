@@ -33,7 +33,7 @@ public class CarHealthController {
 
     @PostMapping("/cars")
     public CarDto createCar(@RequestBody CreateCarRequest createCarRequest) {
-        return carHealthService.createCar(new CarDto(idGeneratorService.generateId(),createCarRequest.model(),createCarRequest.year(),createCarRequest.vin()));
+        return carHealthService.createCar(new CarDto(idGeneratorService.generateId(),createCarRequest.model(),createCarRequest.year(),createCarRequest.vin(), createCarRequest.currentMileage()));
     }
 
     @PutMapping("/cars/{id}")

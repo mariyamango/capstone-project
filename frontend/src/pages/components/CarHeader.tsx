@@ -11,6 +11,7 @@ function CarHeader({ car, onAddWork }: CarHeaderProps) {
         <Card.Header>
             <h2>{car.model} - {car.year}</h2>
             <p>VIN: {car.vin}</p>
+            <p>Current mileage: {car.currentMileage}km</p>
             <Button variant="primary" onClick={onAddWork}>Add Work</Button>
         </Card.Header>
     );

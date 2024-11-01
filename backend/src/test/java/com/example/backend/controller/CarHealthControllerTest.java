@@ -55,8 +55,8 @@ class CarHealthControllerTest {
     void getAllCars_shouldGetAllCars() throws Exception {
         //GIVEN
         List<CarDto> mockCars = Arrays.asList(
-                new CarDto("1", "Model X", 2020, "VIN123"),
-                new CarDto("2", "Model Y", 2021, "VIN456")
+                new CarDto("1", "Model X", 2020, "VIN123",10000),
+                new CarDto("2", "Model Y", 2021, "VIN456",20000)
         );
         when(carHealthService.getAllCars()).thenReturn(mockCars);
         //WHEN THEN
@@ -67,17 +67,19 @@ class CarHealthControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].model").value("Model X"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].year").value(2020))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].vin").value("VIN123"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].currentMileage").value(10000))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[1].id").value("2"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[1].model").value("Model Y"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[1].year").value(2021))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].vin").value("VIN456"));
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].vin").value("VIN456"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].currentMileage").value(20000));
         verify(carHealthService, times(1)).getAllCars();
     }
 
     @Test
     void getCarById_shouldReturnCar() throws Exception {
         //GIVEN
-        CarDto mockCar = new CarDto("1", "Model X", 2020, "VIN123");
+        CarDto mockCar = new CarDto("1", "Model X", 2020, "VIN123",10000);
         when(carHealthService.getCarById("1")).thenReturn(mockCar);
         //WHEN THEN
         mockMvc.perform(get("/api/cars/{id}", "1"))
@@ -85,15 +87,16 @@ class CarHealthControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value("1"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.model").value("Model X"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.year").value(2020))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.vin").value("VIN123"));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.vin").value("VIN123"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.currentMileage").value(10000));
         verify(carHealthService, times(1)).getCarById("1");
     }
 
     @Test
     void createCar_shouldCreateNewCar() throws Exception {
         //GIVEN
-        CreateCarRequest createCarRequest = new CreateCarRequest("Model Z", 2022, "VIN789");
-        CarDto mockCar = new CarDto("generated-id", "Model Z", 2022, "VIN789");
+        CreateCarRequest createCarRequest = new CreateCarRequest("Model Z", 2022, "VIN789",10000);
+        CarDto mockCar = new CarDto("generated-id", "Model Z", 2022, "VIN789",20000);
         when(idGeneratorService.generateId()).thenReturn("generated-id");
         when(carHealthService.createCar(any(CarDto.class))).thenReturn(mockCar);
         //WHEN THEN
@@ -104,7 +107,8 @@ class CarHealthControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value("generated-id"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.model").value("Model Z"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.year").value(2022))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.vin").value("VIN789"));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.vin").value("VIN789"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.currentMileage").value(20000));
 
         verify(idGeneratorService, times(1)).generateId();
         verify(carHealthService, times(1)).createCar(any(CarDto.class));
@@ -114,7 +118,7 @@ class CarHealthControllerTest {
     void updateCar_shouldUpdateExistingCar() throws Exception {
         //GIVEN
         String id = "123";
-        CarDto carDto = new CarDto("123", "Model S", 2023, "VIN123456");
+        CarDto carDto = new CarDto("123", "Model S", 2023, "VIN123456",10000);
         when(carHealthService.updateCar(eq(id), any(CarDto.class))).thenReturn(carDto);
         //WHEN THEN
         mockMvc.perform(put("/api/cars/{id}", id)
@@ -124,14 +128,15 @@ class CarHealthControllerTest {
                 .andExpect(jsonPath("$.id").value("123"))
                 .andExpect(jsonPath("$.model").value("Model S"))
                 .andExpect(jsonPath("$.year").value("2023"))
-                .andExpect(jsonPath("$.vin").value("VIN123456"));
+                .andExpect(jsonPath("$.vin").value("VIN123456"))
+                .andExpect(jsonPath("$.currentMileage").value(10000));
     }
 
     @Test
     void updateCar_shouldThrowException() throws Exception {
         //GIVEN
         String id = "123";
-        CarDto carDto = new CarDto("123", "Model S", 2023, "VIN123456");
+        CarDto carDto = new CarDto("123", "Model S", 2023, "VIN123456",10000);
         when(carHealthService.updateCar(eq(id), any(CarDto.class)))
                 .thenThrow(new NoSuchElementException("Car not found"));
         //WHEN THEN

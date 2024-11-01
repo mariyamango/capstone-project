@@ -16,24 +16,24 @@ public class CarHealthService {
 
     public List<CarDto> getAllCars() {
         return carHealthRepository.findAll().stream()
-                .map(car -> new CarDto(car.id(), car.model(), car.year(), car.vin()))
+                .map(car -> new CarDto(car.id(), car.model(), car.year(), car.vin(), car.currentMileage()))
                 .toList();
     }
 
     public CarDto getCarById(String id) {
         Car car = carHealthRepository.findById(id).orElseThrow(NoSuchElementException::new);
-        return new CarDto(car.id(), car.model(), car.year(), car.vin());
+        return new CarDto(car.id(), car.model(), car.year(), car.vin(), car.currentMileage());
     }
 
     public CarDto createCar(CarDto carDto) {
-        Car car = new Car(carDto.id(), carDto.model(), carDto.year(), carDto.vin());
+        Car car = new Car(carDto.id(), carDto.model(), carDto.year(), carDto.vin(), carDto.currentMileage());
         carHealthRepository.save(car);
         return carDto;
     }
 
     public CarDto updateCar(String id, CarDto carDto) {
         Car car = carHealthRepository.findById(id).orElseThrow(NoSuchElementException::new);
-        Car newCar = new Car(id, carDto.model(), carDto.year(), carDto.vin());
+        Car newCar = new Car(id, carDto.model(), carDto.year(), carDto.vin(), carDto.currentMileage());
         carHealthRepository.save(newCar);
         return carDto;
     }

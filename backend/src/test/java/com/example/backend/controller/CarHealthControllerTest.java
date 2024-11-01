@@ -1,12 +1,10 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.CarDto;
-import com.example.backend.dto.CreateCarRequest;
-import com.example.backend.dto.CreateWorkRequest;
-import com.example.backend.dto.WorkDto;
+import com.example.backend.dto.*;
 import com.example.backend.service.CarHealthService;
 import com.example.backend.service.IdGeneratorService;
 import com.example.backend.service.WorkService;
+import com.example.backend.service.WorkTypeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -44,6 +42,9 @@ class CarHealthControllerTest {
 
     @MockBean
     private WorkService workService;
+
+    @MockBean
+    private WorkTypeService workTypeService;
 
     @MockBean
     private IdGeneratorService idGeneratorService;
@@ -176,8 +177,8 @@ class CarHealthControllerTest {
         // GIVEN
         String carId = "1";
         List<WorkDto> works = Arrays.asList(
-                new WorkDto("1", carId, "Oil Change", 5000, LocalDate.of(2023,1,10), 50.0),
-                new WorkDto("2", carId, "Tire Replacement", 8000, LocalDate.of(2023,2,15), 120.0)
+                new WorkDto("1", carId, "workTypeId","Oil Change", 5000, LocalDate.of(2023,1,10), 50.0),
+                new WorkDto("2", carId, "workTypeId","Tire Replacement", 8000, LocalDate.of(2023,2,15), 120.0)
         );
         when(workService.getAllWorksByCarId(carId)).thenReturn(works);
 
@@ -220,8 +221,8 @@ class CarHealthControllerTest {
     @Test
     void createWork_shouldCreateNewWork() throws Exception {
         //GIVEN
-        CreateWorkRequest createWorkRequest = new CreateWorkRequest("generated-carId","Tires change",10000, LocalDate.of(2023,1,10), 50.0);
-        WorkDto mockWork = new WorkDto("generated-id", "generated-carId","Tires change",10000, LocalDate.of(2023,1,10), 50.0);
+        CreateWorkRequest createWorkRequest = new CreateWorkRequest("generated-carId","workTypeId","Tires change",10000, LocalDate.of(2023,1,10), 50.0);
+        WorkDto mockWork = new WorkDto("generated-id", "generated-carId","workTypeId","Tires change",10000, LocalDate.of(2023,1,10), 50.0);
         when(idGeneratorService.generateId()).thenReturn("generated-id");
         when(workService.createWork(any(WorkDto.class))).thenReturn(mockWork);
         //WHEN THEN
@@ -244,7 +245,7 @@ class CarHealthControllerTest {
     void updateWork_shouldUpdateExistingWork() throws Exception {
         //GIVEN
         String id = "generated-id";
-        WorkDto workDto = new WorkDto("generated-id","generated-carId","Tires change",10000, LocalDate.of(2023,1,10), 50.0);
+        WorkDto workDto = new WorkDto("generated-id","generated-carId","workTypeId","Tires change",10000, LocalDate.of(2023,1,10), 50.0);
         when(workService.updateWork(eq(id), any(WorkDto.class))).thenReturn(workDto);
         //WHEN THEN
         mockMvc.perform(put("/api/works/{id}", id)
@@ -263,7 +264,7 @@ class CarHealthControllerTest {
     void updateWork_shouldThrowException() throws Exception {
         //GIVEN
         String id = "generated-id";
-        WorkDto workDto = new WorkDto("generated-id","generated-carId","Tires change",10000, LocalDate.of(2023,1,10), 50.0);
+        WorkDto workDto = new WorkDto("generated-id","generated-carId","workTypeId","Tires change",10000, LocalDate.of(2023,1,10), 50.0);
         when(workService.updateWork(eq(id), any(WorkDto.class)))
                 .thenThrow(new NoSuchElementException("Work not found"));
         //WHEN THEN
@@ -296,5 +297,28 @@ class CarHealthControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Work not found with id: " + nonExistentWorkId));
         verify(workService, times(1)).deleteWorkById(nonExistentWorkId);
+    }
+
+    @Test
+    void getAllWorkTypes_shouldGetAllWorkTypes() throws Exception {
+        //GIVEN
+        List<WorkTypeDto> mockWorkType = Arrays.asList(
+                new WorkTypeDto("1", "Work Type 1", 10000, 300),
+                new WorkTypeDto("2", "Work Type 2", 20000, 250)
+        );
+        when(workTypeService.getAllWorkTypes()).thenReturn(mockWorkType);
+        //WHEN THEN
+        mockMvc.perform(get("/api/work-types"))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(mockWorkType.size()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value("1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].workTypeName").value("Work Type 1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].mileageDuration").value(10000))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].timeDuration").value(300))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].id").value("2"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].workTypeName").value("Work Type 2"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].mileageDuration").value(20000))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].timeDuration").value(250));
+        verify(workTypeService, times(1)).getAllWorkTypes();
     }
 }

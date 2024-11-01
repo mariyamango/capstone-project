@@ -8,7 +8,7 @@ function Home() {
     const [data, setData] = useState<Car[]>([]);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
-    const [newCar, setNewCar] = useState({model: '', year: 0, vin: ''});
+    const [newCar, setNewCar] = useState({model: '', year: 0, vin: '', currentMileage: 0});
     const [editableCar, setEditableCar] = useState<Car | null>(null);
 
     const fetchData = async () => {
@@ -25,7 +25,7 @@ function Home() {
             const response = await axios.post("/api/cars", newCar);
             setData([...data, response.data]);
             setShowAddModal(false);
-            setNewCar({model: '', year: 0, vin: ''});
+            setNewCar({model: '', year: 0, vin: '', currentMileage: 0});
         } catch (error) {
             console.log('Error adding car', error);
         }
@@ -78,6 +78,7 @@ function Home() {
                                     <Card.Title>{car.model}</Card.Title>
                                     <Card.Text><strong>Year:</strong> {car.year}</Card.Text>
                                     <Card.Text><strong>VIN:</strong> {car.vin}</Card.Text>
+                                    <Card.Text><strong>Current mileage:</strong> {car.currentMileage}km</Card.Text>
                                 </Card.Body>
                             </Link>
                             <Card.Footer>
@@ -111,6 +112,11 @@ function Home() {
                             <Form.Label>VIN</Form.Label>
                             <Form.Control type="text" placeholder="Enter VIN"
                                           onChange={(e) => setNewCar({...newCar, vin: e.target.value})}/>
+                        </Form.Group>
+                        <Form.Group controlId="formCurrentMileage">
+                            <Form.Label>Current Mileage</Form.Label>
+                            <Form.Control type="text" placeholder="Enter current mileage in km"
+                                          onChange={(e) => setNewCar({...newCar, currentMileage: Number(e.target.value)})}/>
                         </Form.Group>
                     </Form>
                 </Modal.Body>
@@ -147,6 +153,11 @@ function Home() {
                                 <Form.Label>VIN</Form.Label>
                                 <Form.Control type="text" placeholder="Enter VIN" value={editableCar.vin}
                                               onChange={(e) => setEditableCar({...editableCar, vin: e.target.value})}/>
+                            </Form.Group>
+                            <Form.Group controlId="formEditCurrentMileage">
+                                <Form.Label>Current Mileage</Form.Label>
+                                <Form.Control type="text" placeholder="Enter Current Mileage in km" value={editableCar.currentMileage}
+                                              onChange={(e) => setEditableCar({...editableCar, currentMileage: Number(e.target.value)})}/>
                             </Form.Group>
                         </Form>
                     )}

@@ -13,15 +13,17 @@ class WorkTest {
         // GIVEN
         String id = "1";
         String carId = "car-1";
+        String workTypeId = "work-type-1";
         String type = "Oil Change";
         int mileage = 5000;
         LocalDate date = LocalDate.of(2023, 1, 10);
         double price = 50.0;
         // WHEN
-        Work work = new Work(id, carId, type, mileage, date, price);
+        Work work = new Work(id, carId, workTypeId, type, mileage, date, price);
         // THEN
         assertEquals(id, work.id());
         assertEquals(carId, work.carId());
+        assertEquals(workTypeId, work.workTypeId());
         assertEquals(type, work.type());
         assertEquals(mileage, work.mileage());
         assertEquals(date, work.date());

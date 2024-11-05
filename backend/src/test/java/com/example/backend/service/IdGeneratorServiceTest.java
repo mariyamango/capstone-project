@@ -1,30 +1,40 @@
 package com.example.backend.service;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class IdGeneratorServiceTest {
 
-    @Autowired
+    @Mock
     private IdGeneratorService idGeneratorService;
 
     @Test
     void randomId_shouldReturnNonNullId() {
+        //GIVEN
+        when(idGeneratorService.generateId()).thenReturn(UUID.randomUUID().toString());
+        //WHEN
         String id = idGeneratorService.generateId();
-        assertNotNull(id, "ID should not be null");
+        //THEN
+        assertNotNull(id, "Id should not be null");
     }
 
     @Test
     void randomId_shouldReturnValidUUIDFormat() {
+        //GIVEN
+        when(idGeneratorService.generateId()).thenReturn(UUID.randomUUID().toString());
+        //WHEN
         String id = idGeneratorService.generateId();
-        assertTrue(isValidUUID(id), "ID should be in UUID format");
+        //THEN
+        assertTrue(isValidUUID(id), "Id should be in UUID format");
     }
 
     private boolean isValidUUID(String id) {
@@ -35,5 +45,4 @@ class IdGeneratorServiceTest {
             return false;
         }
     }
-
 }

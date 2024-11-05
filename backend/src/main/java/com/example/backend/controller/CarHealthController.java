@@ -1,12 +1,10 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.CarDto;
-import com.example.backend.dto.CreateCarRequest;
-import com.example.backend.dto.CreateWorkRequest;
-import com.example.backend.dto.WorkDto;
+import com.example.backend.dto.*;
 import com.example.backend.service.CarHealthService;
 import com.example.backend.service.IdGeneratorService;
 import com.example.backend.service.WorkService;
+import com.example.backend.service.WorkTypeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +18,7 @@ public class CarHealthController {
     private final CarHealthService carHealthService;
     private final IdGeneratorService idGeneratorService;
     private final WorkService workService;
+    private final WorkTypeService workTypeService;
 
     @GetMapping("/cars")
     public List<CarDto> cars() {
@@ -54,7 +53,7 @@ public class CarHealthController {
 
     @PostMapping("/works")
     public WorkDto addWork(@RequestBody CreateWorkRequest createWorkRequest) {
-        return workService.createWork(new WorkDto(idGeneratorService.generateId(), createWorkRequest.carId(), createWorkRequest.type(), createWorkRequest.mileage(), createWorkRequest.date(), createWorkRequest.price()));
+        return workService.createWork(new WorkDto(idGeneratorService.generateId(), createWorkRequest.carId(), createWorkRequest.workTypeId(), createWorkRequest.type(), createWorkRequest.mileage(), createWorkRequest.date(), createWorkRequest.price()));
     }
 
     @PutMapping("/works/{id}")
@@ -66,5 +65,10 @@ public class CarHealthController {
     public ResponseEntity<Void> deleteWork(@PathVariable String id) {
         workService.deleteWorkById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/work-types")
+    public List<WorkTypeDto> workTypes() {
+        return workTypeService.getAllWorkTypes();
     }
 }

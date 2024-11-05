@@ -4,10 +4,7 @@ import com.example.backend.dto.*;
 import com.example.backend.repository.CarHealthRepository;
 import com.example.backend.repository.WorkRepository;
 import com.example.backend.repository.WorkTypeRepository;
-import com.example.backend.service.CarHealthService;
-import com.example.backend.service.IdGeneratorService;
-import com.example.backend.service.WorkService;
-import com.example.backend.service.WorkTypeService;
+import com.example.backend.service.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -50,6 +48,9 @@ class CarHealthControllerTest {
 
     @Autowired
     private IdGeneratorService idGeneratorService;
+
+    @Autowired
+    private CountdownCalculationService countdownCalculationService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -289,5 +290,31 @@ class CarHealthControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$[1].workTypeName").value("Work Type 2"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[1].mileageDuration").value(20000))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[1].timeDuration").value(250));
+    }
+
+    @Test
+    void getWorkCountdownsByCarId_schouldGetWorkCountdownsByCarId() throws Exception {
+        //GIVEN
+        String carId = "123";
+        CarDto car1 = new CarDto(carId, "Model X", 2020, "VIN123", 10000);
+        carHealthService.createCar(car1);
+        WorkDto workDto1 = new WorkDto("1", carId, "workTypeId", "Oil Change", 5000, LocalDate.of(2023, 1, 10), 50.0);
+        WorkDto workDto2 = new WorkDto("2", carId, "workTypeId", "Oil Change", 8000, LocalDate.of(2023, 2, 15), 120.0);
+        workService.createWork(workDto1);
+        workService.createWork(workDto2);
+        WorkTypeDto workTypeDto1 = new WorkTypeDto("workTypeId", "Oil Change", 20000, 250);
+        workTypeService.createWorkType(workTypeDto1);
+        //WHEN THEN
+        mockMvc.perform(get("/api/works/{carId}/countdowns", carId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].workTypeId").value("workTypeId"))
+                .andExpect(jsonPath("$[0].type").value("Oil Change"))
+                .andExpect(jsonPath("$[0].mileageLeft").value(20000 - (10000 - 5000)))
+                .andExpect(jsonPath("$[0].daysLeft").value(250 + ChronoUnit.DAYS.between(LocalDate.now(), LocalDate.of(2023, 1, 10))))
+                .andExpect(jsonPath("$[1].workTypeId").value("workTypeId"))
+                .andExpect(jsonPath("$[1].type").value("Oil Change"))
+                .andExpect(jsonPath("$[1].mileageLeft").value(20000 - (10000 - 8000)))
+                .andExpect(jsonPath("$[1].daysLeft").value(250 + ChronoUnit.DAYS.between(LocalDate.now(), LocalDate.of(2023, 2, 15))));
     }
 }

@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class CarHealthControllerTest {
 
     @Autowired
@@ -53,7 +54,6 @@ class CarHealthControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @DirtiesContext
     @Test
     void getAllCars_shouldGetAllCars() throws Exception {
         //GIVEN
@@ -77,7 +77,6 @@ class CarHealthControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$[1].currentMileage").value(20000));
     }
 
-    @DirtiesContext
     @Test
     void getCarById_shouldReturnCar() throws Exception {
         //GIVEN
@@ -93,7 +92,6 @@ class CarHealthControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.currentMileage").value(10000));
     }
 
-    @DirtiesContext
     @Test
     void createCar_shouldCreateNewCar() throws Exception {
         //GIVEN
@@ -109,7 +107,6 @@ class CarHealthControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.currentMileage").value(10000));
     }
 
-    @DirtiesContext
     @Test
     void updateCar_shouldUpdateExistingCar() throws Exception {
         //GIVEN
@@ -129,7 +126,6 @@ class CarHealthControllerTest {
                 .andExpect(jsonPath("$.currentMileage").value(20000));
     }
 
-    @DirtiesContext
     @Test
     void updateCar_shouldThrowException() throws Exception {
         //GIVEN
@@ -144,7 +140,6 @@ class CarHealthControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    @DirtiesContext
     @Test
     void deleteCar_shouldDeleteExistingCar() throws Exception {
         //GIVEN
@@ -156,7 +151,6 @@ class CarHealthControllerTest {
                 .andExpect(status().isNoContent());
     }
 
-    @DirtiesContext
     @Test
     void deleteCar_shouldThrowNoSuchElementException() throws Exception {
         //GIVEN
@@ -167,7 +161,6 @@ class CarHealthControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    @DirtiesContext
     @Test
     void work_shouldReturnListOfWorkDtos() throws Exception {
         // GIVEN
@@ -195,7 +188,6 @@ class CarHealthControllerTest {
                 .andExpect(jsonPath("$[1].price").value(120.0));
     }
 
-    @DirtiesContext
     @Test
     void work_shouldReturnEmptyListWhenNoWorksFound() throws Exception {
         // GIVEN
@@ -207,7 +199,6 @@ class CarHealthControllerTest {
                 .andExpect(jsonPath("$", hasSize(0)));
     }
 
-    @DirtiesContext
     @Test
     void createWork_shouldCreateNewWork() throws Exception {
         //GIVEN
@@ -226,7 +217,6 @@ class CarHealthControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.price").value("50.0"));
     }
 
-    @DirtiesContext
     @Test
     void updateWork_shouldUpdateExistingWork() throws Exception {
         //GIVEN
@@ -247,7 +237,6 @@ class CarHealthControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.price").value("55.0"));
     }
 
-    @DirtiesContext
     @Test
     void updateWork_shouldThrowException() throws Exception {
         //GIVEN
@@ -260,7 +249,6 @@ class CarHealthControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    @DirtiesContext
     @Test
     void deleteWork_shouldDeleteExistingWork() throws Exception {
         //GIVEN
@@ -272,7 +260,6 @@ class CarHealthControllerTest {
                 .andExpect(status().isNoContent());
     }
 
-    @DirtiesContext
     @Test
     void deleteWork_shouldThrowNoSuchElementException() throws Exception {
         //GIVEN
@@ -283,7 +270,6 @@ class CarHealthControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    @DirtiesContext
     @Test
     void getAllWorkTypes_shouldGetAllWorkTypes() throws Exception {
         //GIVEN

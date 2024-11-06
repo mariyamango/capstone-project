@@ -32,9 +32,10 @@ function WorkModal({ show, editWork, newWork, onClose, onSave, onChange }: WorkM
     }, []);
 
     useEffect(() => {
-        const isValid = newWork.type && newWork.mileage && newWork.date && newWork.price;
-        setIsFormValid(!!isValid);
-    }, [newWork]);
+        const work = editWork || newWork; // Используем editWork, если он существует
+        const isValid = Boolean(work.type) && (work.mileage !== undefined && work.mileage > 0) && Boolean(work.date) && (work.price !== undefined && work.price >= 0);
+        setIsFormValid(isValid);
+    }, [editWork, newWork]);
 
     const handleWorkTypeChange = (e: ChangeEvent<HTMLSelectElement>) => {
         const selectedTypeId = e.target.value;
@@ -118,6 +119,7 @@ function WorkModal({ show, editWork, newWork, onClose, onSave, onChange }: WorkM
         </Modal>
     );
 }
+
 
 
 export default WorkModal;

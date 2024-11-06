@@ -1,10 +1,7 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.*;
-import com.example.backend.service.CarHealthService;
-import com.example.backend.service.IdGeneratorService;
-import com.example.backend.service.WorkService;
-import com.example.backend.service.WorkTypeService;
+import com.example.backend.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +16,7 @@ public class CarHealthController {
     private final IdGeneratorService idGeneratorService;
     private final WorkService workService;
     private final WorkTypeService workTypeService;
+    private final CountdownCalculationService countdownCalculationService;
 
     @GetMapping("/cars")
     public List<CarDto> cars() {
@@ -70,5 +68,34 @@ public class CarHealthController {
     @GetMapping("/work-types")
     public List<WorkTypeDto> workTypes() {
         return workTypeService.getAllWorkTypes();
+    }
+
+    @GetMapping("/works/{carId}/countdowns")
+    public List<WorkCountdownDto> getWorkCountdownsByCarId(@PathVariable String carId) {
+        int currentMileage = carHealthService.getCarById(carId).currentMileage();
+        List<WorkDto> works = workService.getAllWorksByCarId(carId);
+
+        return works.stream()
+                .map(work -> {
+                    WorkTypeDto workType = workTypeService.getWorkTypeById(work.workTypeId());
+                    CountdownResultDto result = countdownCalculationService.calculateCountdown(
+                            workType.mileageDuration(),
+                            workType.timeDuration(),
+                            currentMileage,
+                            work.mileage(),
+                            work.date()
+                    );
+                    return new WorkCountdownDto(
+                            work.id(),
+                            work.carId(),
+                            work.workTypeId(),
+                            work.type(),
+                            work.mileage(),
+                            work.date(),
+                            work.price(),
+                            result.mileageLeft(),
+                            result.daysLeft()
+                    );
+                }).toList();
     }
 }

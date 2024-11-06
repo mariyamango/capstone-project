@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @AllArgsConstructor
@@ -22,5 +23,11 @@ public class WorkTypeService {
     public WorkTypeDto createWorkType(WorkTypeDto workTypeDto) {
         workTypeRepository.save(new WorkType(workTypeDto.id(), workTypeDto.workTypeName(), workTypeDto.mileageDuration(), workTypeDto.timeDuration()));
         return workTypeDto;
+    }
+
+    public WorkTypeDto getWorkTypeById(String id) {
+        return workTypeRepository.findById(id)
+                .map(workType -> new WorkTypeDto(workType.id(), workType.workTypeName(), workType.mileageDuration(), workType.timeDuration()))
+                .orElseThrow(() -> new NoSuchElementException("WorkType not found"));
     }
 }

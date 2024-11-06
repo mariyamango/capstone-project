@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -58,5 +59,21 @@ class WorkTypeServiceTest {
         assertEquals(100, result.mileageDuration());
         assertEquals(200, result.timeDuration());
         verify(workTypeRepository, times(1)).save(workType);
+    }
+
+    @Test
+    void getWorkTypeById_shouldReturnWorkType() {
+        //GIVEN
+        WorkType workType = new WorkType("1", "A work type",100,200);
+        when(workTypeRepository.findById("1")).thenReturn(Optional.of(workType));
+        //WHEN
+        WorkTypeDto result = workTypeService.getWorkTypeById("1");
+        //THEN
+        assertNotNull(result);
+        assertEquals("1", result.id());
+        assertEquals("A work type",result.workTypeName());
+        assertEquals(100, result.mileageDuration());
+        assertEquals(200, result.timeDuration());
+        verify(workTypeRepository, times(1)).findById("1");
     }
 }

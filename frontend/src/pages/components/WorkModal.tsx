@@ -32,7 +32,7 @@ function WorkModal({ show, editWork, newWork, onClose, onSave, onChange }: WorkM
     }, []);
 
     useEffect(() => {
-        const work = editWork || newWork; // Используем editWork, если он существует
+        const work = editWork || newWork;
         const isValid = Boolean(work.type) && (work.mileage !== undefined && work.mileage > 0) && Boolean(work.date) && (work.price !== undefined && work.price >= 0);
         setIsFormValid(isValid);
     }, [editWork, newWork]);

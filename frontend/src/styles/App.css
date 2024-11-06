@@ -1,5 +1,10 @@
-html, body {
+html {
     height: 100%;
+}
+
+body {
+    padding-top: 60px;
+    padding-bottom: 90px;
 }
 
 #root {
@@ -47,3 +52,33 @@ main {
 .expand-button {
     font-weight: bold;
 }
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.flex-fill {
+    flex: 1;
+}
+
+.header-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    background-color: #6c757d;
+    width: 100%;
+    padding: 10px 0;
+}
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+

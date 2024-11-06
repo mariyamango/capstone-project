@@ -19,14 +19,14 @@ function WorkGroup({ type, workCountdowns, onEditWork, onDeleteWork }: WorkGroup
     }, [workCountdowns]);
 
     const getMileageColor = (mileageLeft: number) => {
-        if (mileageLeft > 1000) return "text-success";
-        if (mileageLeft > 0) return "text-warning";
+        if (mileageLeft > 3000) return "text-success";
+        if (mileageLeft > 1000) return "text-warning";
         return "text-danger";
     };
 
     const getDaysColor = (daysLeft: number) => {
-        if (daysLeft > 30) return "text-success";
-        if (daysLeft > 0) return "text-warning";
+        if (daysLeft > 60) return "text-success";
+        if (daysLeft > 30) return "text-warning";
         return "text-danger";
     };
 

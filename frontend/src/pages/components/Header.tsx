@@ -12,7 +12,7 @@ const Header = () => {
                     <Navbar.Brand as={Link} to="/">
                         <img src={Logo} alt="" className="logo" />
                     </Navbar.Brand>
-                    <Nav className="ms-3"> {/* Добавлен отступ слева от логотипа */}
+                    <Nav className="ms-3">
                         <Nav.Link as={Link} to="/">Home</Nav.Link>
                         <Nav.Link as={Link} to="/about">About</Nav.Link>
                     </Nav>

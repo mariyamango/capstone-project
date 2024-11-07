@@ -6,7 +6,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -71,11 +74,13 @@ public class CarHealthController {
     }
 
     @GetMapping("/works/{carId}/countdowns")
-    public List<WorkCountdownDto> getWorkCountdownsByCarId(@PathVariable String carId) {
+    public WorkSummaryResponseDto getWorkCountdownsByCarId(@PathVariable String carId) {
         int currentMileage = carHealthService.getCarById(carId).currentMileage();
         List<WorkDto> works = workService.getAllWorksByCarId(carId);
+        Map<String, BigDecimal> totalByType = new HashMap<>();
+        BigDecimal[] grandTotal = { BigDecimal.ZERO };
 
-        return works.stream()
+        List<WorkCountdownDto> workCountdowns = works.stream()
                 .map(work -> {
                     WorkTypeDto workType = workTypeService.getWorkTypeById(work.workTypeId());
                     CountdownResultDto result = countdownCalculationService.calculateCountdown(
@@ -85,6 +90,9 @@ public class CarHealthController {
                             work.mileage(),
                             work.date()
                     );
+                    BigDecimal currentTotal = totalByType.getOrDefault(work.type(), BigDecimal.ZERO);
+                    totalByType.put(work.type(), currentTotal.add(BigDecimal.valueOf(work.price())));
+                    grandTotal[0] = grandTotal[0].add(BigDecimal.valueOf(work.price()));
                     return new WorkCountdownDto(
                             work.id(),
                             work.carId(),
@@ -97,5 +105,6 @@ public class CarHealthController {
                             result.daysLeft()
                     );
                 }).toList();
+        return new WorkSummaryResponseDto(workCountdowns,totalByType,grandTotal[0]);
     }
 }

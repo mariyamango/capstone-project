@@ -307,14 +307,15 @@ class CarHealthControllerTest {
         //WHEN THEN
         mockMvc.perform(get("/api/works/{carId}/countdowns", carId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].workTypeId").value("workTypeId"))
-                .andExpect(jsonPath("$[0].type").value("Oil Change"))
-                .andExpect(jsonPath("$[0].mileageLeft").value(20000 - (10000 - 5000)))
-                .andExpect(jsonPath("$[0].daysLeft").value(250 + ChronoUnit.DAYS.between(LocalDate.now(), LocalDate.of(2023, 1, 10))))
-                .andExpect(jsonPath("$[1].workTypeId").value("workTypeId"))
-                .andExpect(jsonPath("$[1].type").value("Oil Change"))
-                .andExpect(jsonPath("$[1].mileageLeft").value(20000 - (10000 - 8000)))
-                .andExpect(jsonPath("$[1].daysLeft").value(250 + ChronoUnit.DAYS.between(LocalDate.now(), LocalDate.of(2023, 2, 15))));
+                .andExpect(jsonPath("$.workCountdowns.length()").value(2))
+                .andExpect(jsonPath("$.workCountdowns[0].workTypeId").value("workTypeId"))
+                .andExpect(jsonPath("$.workCountdowns[0].type").value("Oil Change"))
+                .andExpect(jsonPath("$.workCountdowns[0].mileageLeft").value(20000 - (10000 - 5000)))
+                .andExpect(jsonPath("$.workCountdowns[0].daysLeft").value(250 + ChronoUnit.DAYS.between(LocalDate.now(), LocalDate.of(2023, 1, 10))))
+                .andExpect(jsonPath("$.workCountdowns[1].workTypeId").value("workTypeId"))
+                .andExpect(jsonPath("$.workCountdowns[1].type").value("Oil Change"))
+                .andExpect(jsonPath("$.workCountdowns[1].mileageLeft").value(20000 - (10000 - 8000)))
+                .andExpect(jsonPath("$.workCountdowns[1].daysLeft").value(250 + ChronoUnit.DAYS.between(LocalDate.now(), LocalDate.of(2023, 2, 15))))
+                .andExpect(jsonPath("$.grandTotal").value(50+120));
     }
 }

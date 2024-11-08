@@ -27,7 +27,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     }
 
 
-    private AppUser createAndSaveUser(OAuth2User oAuth2User) {
+    protected AppUser createAndSaveUser(OAuth2User oAuth2User) {
         AppUser newUser = AppUser.builder()
                 .id(oAuth2User.getName())
                 .username(oAuth2User.getAttribute("login"))

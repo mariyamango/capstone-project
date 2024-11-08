@@ -120,6 +120,23 @@ class CarHealthControllerTest {
     }
 
     @Test
+    void getCarById_shouldthrowExceptionWhenWrongUser() throws Exception {
+        //GIVEN
+        AppUser appUser = new AppUser("123","username","avatarUrl","user");
+        userRepository.save(appUser);
+        OAuth2User mockOAuth2User = Mockito.mock(OAuth2User.class);
+        Mockito.when(mockOAuth2User.getName()).thenReturn("123");
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(mockOAuth2User, null, List.of())
+        );
+        CarDto car1 = new CarDto("1", "anotherUser", "Model X", 2020, "VIN123", 10000);
+        carHealthService.createCar(car1);
+        //WHEN THEN
+        mockMvc.perform(get("/api/cars/{id}", "1"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void createCar_shouldCreateNewCar() throws Exception {
         //GIVEN
         AppUser appUser = new AppUser("123","username","avatarUrl","user");
@@ -252,6 +269,25 @@ class CarHealthControllerTest {
     }
 
     @Test
+    void work_shouldThrowExceptionWhenWrongUser() throws Exception {
+        // GIVEN
+        AppUser appUser = new AppUser("123","username","avatarUrl","user");
+        userRepository.save(appUser);
+        OAuth2User mockOAuth2User = Mockito.mock(OAuth2User.class);
+        Mockito.when(mockOAuth2User.getName()).thenReturn("123");
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(mockOAuth2User, null, List.of())
+        );
+        String carId = "123";
+        CarDto car = new CarDto(carId, "anotherUser", "Model X", 2020, "VIN123", 10000);
+        carHealthService.createCar(car);
+        // WHEN THEN
+        mockMvc.perform(get("/api/works/{carId}", carId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void createWork_shouldCreateNewWork() throws Exception {
         //GIVEN
         CreateWorkRequest createWorkRequest = new CreateWorkRequest("generated-carId", "workTypeId", "Tires change", 10000, LocalDate.of(2023, 1, 10), 50.0);
@@ -375,5 +411,29 @@ class CarHealthControllerTest {
                 .andExpect(jsonPath("$.workCountdowns[1].mileageLeft").value(20000 - (10000 - 8000)))
                 .andExpect(jsonPath("$.workCountdowns[1].daysLeft").value(250 + ChronoUnit.DAYS.between(LocalDate.now(), LocalDate.of(2023, 2, 15))))
                 .andExpect(jsonPath("$.grandTotal").value(50+120));
+    }
+
+    @Test
+    void getWorkCountdownsByCarId_schouldThrowExceptionWhenWrongUser() throws Exception {
+        //GIVEN
+        AppUser appUser = new AppUser("123","username","avatarUrl","user");
+        userRepository.save(appUser);
+        OAuth2User mockOAuth2User = Mockito.mock(OAuth2User.class);
+        Mockito.when(mockOAuth2User.getName()).thenReturn("123");
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(mockOAuth2User, null, List.of())
+        );
+        String carId = "123";
+        CarDto car1 = new CarDto(carId, "anotherUser", "Model X", 2020, "VIN123", 10000);
+        carHealthService.createCar(car1);
+        WorkDto workDto1 = new WorkDto("1", carId, "workTypeId", "Oil Change", 5000, LocalDate.of(2023, 1, 10), 50.0);
+        WorkDto workDto2 = new WorkDto("2", carId, "workTypeId", "Oil Change", 8000, LocalDate.of(2023, 2, 15), 120.0);
+        workService.createWork(workDto1);
+        workService.createWork(workDto2);
+        WorkTypeDto workTypeDto1 = new WorkTypeDto("workTypeId", "Oil Change", 20000, 250);
+        workTypeService.createWorkType(workTypeDto1);
+        //WHEN THEN
+        mockMvc.perform(get("/api/works/{carId}/countdowns", carId))
+                .andExpect(status().isForbidden());
     }
 }

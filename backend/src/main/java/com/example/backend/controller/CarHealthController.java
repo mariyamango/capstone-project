@@ -18,6 +18,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @RequestMapping("/api")
 public class CarHealthController {
+    public static final String UNAUTHORIZED_ERROR_MESSAGE = "Unauthorized to view works for this car";
     private final CarHealthService carHealthService;
     private final IdGeneratorService idGeneratorService;
     private final WorkService workService;
@@ -34,7 +35,7 @@ public class CarHealthController {
     public CarDto car(@AuthenticationPrincipal OAuth2User oAuth2User, @PathVariable String id) {
         String owner = carHealthService.getOwner(id);
         if (!owner.equals(oAuth2User.getName())) {
-            throw new AccessDeniedException("Unauthorized to view works for this car");
+            throw new AccessDeniedException(UNAUTHORIZED_ERROR_MESSAGE);
         }
         return carHealthService.getCarById(id);
     }
@@ -60,7 +61,7 @@ public class CarHealthController {
     public List<WorkDto> work(@AuthenticationPrincipal OAuth2User oAuth2User, @PathVariable String carId) {
         String owner = carHealthService.getOwner(carId);
         if (!owner.equals(oAuth2User.getName())) {
-            throw new AccessDeniedException("Unauthorized to view works for this car");
+            throw new AccessDeniedException(UNAUTHORIZED_ERROR_MESSAGE);
         }
         return workService.getAllWorksByCarId(carId);
     }
@@ -90,7 +91,7 @@ public class CarHealthController {
     public WorkSummaryResponseDto getWorkCountdownsByCarId(@AuthenticationPrincipal OAuth2User oAuth2User, @PathVariable String carId) {
         String owner = carHealthService.getOwner(carId);
         if (!owner.equals(oAuth2User.getName())) {
-            throw new AccessDeniedException("Unauthorized to view works for this car");
+            throw new AccessDeniedException(UNAUTHORIZED_ERROR_MESSAGE);
         }
         int currentMileage = carHealthService.getCarById(carId).currentMileage();
         List<WorkDto> works = workService.getAllWorksByCarId(carId);

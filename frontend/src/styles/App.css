@@ -40,6 +40,10 @@ main {
     filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
+.navbar-nav {
+    align-items: center;
+}
+
 .clickable-header {
     cursor: pointer;
     color: darkblue;
@@ -71,7 +75,7 @@ main {
     z-index: 999;
     background-color: #6c757d;
     width: 100%;
-    padding: 10px 0;
+    padding: 10px 50px;
 }
 
 .footer {
@@ -82,3 +86,10 @@ main {
     z-index: 1000;
 }
 
+.logout-btn {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}

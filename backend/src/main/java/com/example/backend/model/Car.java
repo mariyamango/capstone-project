@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public record Car(
         @Id
         String id,
+        String userId,
         String model,
         int year,
         String vin,

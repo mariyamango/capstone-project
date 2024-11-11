@@ -1,22 +1,30 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.*;
+import com.example.backend.model.AppUser;
 import com.example.backend.repository.CarHealthRepository;
+import com.example.backend.repository.UserRepository;
 import com.example.backend.repository.WorkRepository;
 import com.example.backend.repository.WorkTypeRepository;
 import com.example.backend.service.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -25,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@WithMockUser
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class CarHealthControllerTest {
 
@@ -53,13 +62,23 @@ class CarHealthControllerTest {
     private CountdownCalculationService countdownCalculationService;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @Test
     void getAllCars_shouldGetAllCars() throws Exception {
         //GIVEN
-        CarDto car1 = new CarDto("1", "Model X", 2020, "VIN123", 10000);
-        CarDto car2 = new CarDto("2", "Model Y", 2021, "VIN456", 20000);
+        AppUser appUser = new AppUser("123","username","avatarUrl","user");
+        userRepository.save(appUser);
+        OAuth2User mockOAuth2User = Mockito.mock(OAuth2User.class);
+        Mockito.when(mockOAuth2User.getName()).thenReturn("123");
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(mockOAuth2User, null, List.of())
+        );
+        CarDto car1 = new CarDto("1", appUser.id(), "Model X", 2020, "VIN123", 10000);
+        CarDto car2 = new CarDto("2", appUser.id(), "Model Y", 2021, "VIN456", 20000);
         carHealthService.createCar(car1);
         carHealthService.createCar(car2);
         //WHEN THEN
@@ -81,7 +100,14 @@ class CarHealthControllerTest {
     @Test
     void getCarById_shouldReturnCar() throws Exception {
         //GIVEN
-        CarDto car1 = new CarDto("1", "Model X", 2020, "VIN123", 10000);
+        AppUser appUser = new AppUser("123","username","avatarUrl","user");
+        userRepository.save(appUser);
+        OAuth2User mockOAuth2User = Mockito.mock(OAuth2User.class);
+        Mockito.when(mockOAuth2User.getName()).thenReturn("123");
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(mockOAuth2User, null, List.of())
+        );
+        CarDto car1 = new CarDto("1", appUser.id(), "Model X", 2020, "VIN123", 10000);
         carHealthService.createCar(car1);
         //WHEN THEN
         mockMvc.perform(get("/api/cars/{id}", "1"))
@@ -94,9 +120,33 @@ class CarHealthControllerTest {
     }
 
     @Test
+    void getCarById_shouldthrowExceptionWhenWrongUser() throws Exception {
+        //GIVEN
+        AppUser appUser = new AppUser("123","username","avatarUrl","user");
+        userRepository.save(appUser);
+        OAuth2User mockOAuth2User = Mockito.mock(OAuth2User.class);
+        Mockito.when(mockOAuth2User.getName()).thenReturn("123");
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(mockOAuth2User, null, List.of())
+        );
+        CarDto car1 = new CarDto("1", "anotherUser", "Model X", 2020, "VIN123", 10000);
+        carHealthService.createCar(car1);
+        //WHEN THEN
+        mockMvc.perform(get("/api/cars/{id}", "1"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void createCar_shouldCreateNewCar() throws Exception {
         //GIVEN
-        CreateCarRequest createCarRequest = new CreateCarRequest("Model Z", 2022, "VIN789", 10000);
+        AppUser appUser = new AppUser("123","username","avatarUrl","user");
+        userRepository.save(appUser);
+        OAuth2User mockOAuth2User = Mockito.mock(OAuth2User.class);
+        Mockito.when(mockOAuth2User.getName()).thenReturn("123");
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(mockOAuth2User, null, List.of())
+        );
+        CreateCarRequest createCarRequest = new CreateCarRequest("Model Z", appUser.id(), 2022, "VIN789", 10000);
         //WHEN THEN
         mockMvc.perform(post("/api/cars")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -112,9 +162,9 @@ class CarHealthControllerTest {
     void updateCar_shouldUpdateExistingCar() throws Exception {
         //GIVEN
         String id = "123";
-        CarDto carDto = new CarDto(id, "Model S", 2023, "VIN123456", 10000);
+        CarDto carDto = new CarDto(id, "user1", "Model S", 2023, "VIN123456", 10000);
         carHealthService.createCar(carDto);
-        CarDto updatedCarDto = new CarDto(id, "Model X", 2021, "VIN456", 20000);
+        CarDto updatedCarDto = new CarDto(id, "user1", "Model X", 2021, "VIN456", 20000);
         //WHEN THEN
         mockMvc.perform(put("/api/cars/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -131,9 +181,9 @@ class CarHealthControllerTest {
     void updateCar_shouldThrowException() throws Exception {
         //GIVEN
         String id = "123";
-        CarDto carDto = new CarDto(id, "Model S", 2023, "VIN123456", 10000);
+        CarDto carDto = new CarDto(id, "user1", "Model S", 2023, "VIN123456", 10000);
         carHealthService.createCar(carDto);
-        CarDto updatedCarDto = new CarDto(id, "Model X", 2021, "VIN456", 20000);
+        CarDto updatedCarDto = new CarDto(id, "user1", "Model X", 2021, "VIN456", 20000);
         //WHEN THEN
         mockMvc.perform(put("/api/cars/{id}", "124")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -145,7 +195,7 @@ class CarHealthControllerTest {
     void deleteCar_shouldDeleteExistingCar() throws Exception {
         //GIVEN
         String id = "123";
-        CarDto carDto = new CarDto(id, "Model S", 2023, "VIN123456", 10000);
+        CarDto carDto = new CarDto(id, "user1", "Model S", 2023, "VIN123456", 10000);
         carHealthService.createCar(carDto);
         //WHEN THEN
         mockMvc.perform(delete("/api/cars/{id}", id))
@@ -165,7 +215,16 @@ class CarHealthControllerTest {
     @Test
     void work_shouldReturnListOfWorkDtos() throws Exception {
         // GIVEN
+        AppUser appUser = new AppUser("123","username","avatarUrl","user");
+        userRepository.save(appUser);
+        OAuth2User mockOAuth2User = Mockito.mock(OAuth2User.class);
+        Mockito.when(mockOAuth2User.getName()).thenReturn("123");
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(mockOAuth2User, null, List.of())
+        );
         String carId = "123";
+        CarDto car = new CarDto(carId, appUser.id(), "Model X", 2020, "VIN123", 10000);
+        carHealthService.createCar(car);
         WorkDto workDto1 = new WorkDto("1", carId, "workTypeId", "Oil Change", 5000, LocalDate.of(2023, 1, 10), 50.0);
         WorkDto workDto2 = new WorkDto("2", carId, "workTypeId", "Tire Replacement", 8000, LocalDate.of(2023, 2, 15), 120.0);
         workService.createWork(workDto1);
@@ -192,12 +251,40 @@ class CarHealthControllerTest {
     @Test
     void work_shouldReturnEmptyListWhenNoWorksFound() throws Exception {
         // GIVEN
+        AppUser appUser = new AppUser("123","username","avatarUrl","user");
+        userRepository.save(appUser);
+        OAuth2User mockOAuth2User = Mockito.mock(OAuth2User.class);
+        Mockito.when(mockOAuth2User.getName()).thenReturn("123");
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(mockOAuth2User, null, List.of())
+        );
         String carId = "123";
+        CarDto car = new CarDto(carId, appUser.id(), "Model X", 2020, "VIN123", 10000);
+        carHealthService.createCar(car);
         // WHEN THEN
         mockMvc.perform(get("/api/works/{carId}", carId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    void work_shouldThrowExceptionWhenWrongUser() throws Exception {
+        // GIVEN
+        AppUser appUser = new AppUser("123","username","avatarUrl","user");
+        userRepository.save(appUser);
+        OAuth2User mockOAuth2User = Mockito.mock(OAuth2User.class);
+        Mockito.when(mockOAuth2User.getName()).thenReturn("123");
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(mockOAuth2User, null, List.of())
+        );
+        String carId = "123";
+        CarDto car = new CarDto(carId, "anotherUser", "Model X", 2020, "VIN123", 10000);
+        carHealthService.createCar(car);
+        // WHEN THEN
+        mockMvc.perform(get("/api/works/{carId}", carId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -295,8 +382,15 @@ class CarHealthControllerTest {
     @Test
     void getWorkCountdownsByCarId_schouldGetWorkCountdownsByCarId() throws Exception {
         //GIVEN
+        AppUser appUser = new AppUser("123","username","avatarUrl","user");
+        userRepository.save(appUser);
+        OAuth2User mockOAuth2User = Mockito.mock(OAuth2User.class);
+        Mockito.when(mockOAuth2User.getName()).thenReturn("123");
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(mockOAuth2User, null, List.of())
+        );
         String carId = "123";
-        CarDto car1 = new CarDto(carId, "Model X", 2020, "VIN123", 10000);
+        CarDto car1 = new CarDto(carId, appUser.id(), "Model X", 2020, "VIN123", 10000);
         carHealthService.createCar(car1);
         WorkDto workDto1 = new WorkDto("1", carId, "workTypeId", "Oil Change", 5000, LocalDate.of(2023, 1, 10), 50.0);
         WorkDto workDto2 = new WorkDto("2", carId, "workTypeId", "Oil Change", 8000, LocalDate.of(2023, 2, 15), 120.0);
@@ -317,5 +411,29 @@ class CarHealthControllerTest {
                 .andExpect(jsonPath("$.workCountdowns[1].mileageLeft").value(20000 - (10000 - 8000)))
                 .andExpect(jsonPath("$.workCountdowns[1].daysLeft").value(250 + ChronoUnit.DAYS.between(LocalDate.now(), LocalDate.of(2023, 2, 15))))
                 .andExpect(jsonPath("$.grandTotal").value(50+120));
+    }
+
+    @Test
+    void getWorkCountdownsByCarId_schouldThrowExceptionWhenWrongUser() throws Exception {
+        //GIVEN
+        AppUser appUser = new AppUser("123","username","avatarUrl","user");
+        userRepository.save(appUser);
+        OAuth2User mockOAuth2User = Mockito.mock(OAuth2User.class);
+        Mockito.when(mockOAuth2User.getName()).thenReturn("123");
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(mockOAuth2User, null, List.of())
+        );
+        String carId = "123";
+        CarDto car1 = new CarDto(carId, "anotherUser", "Model X", 2020, "VIN123", 10000);
+        carHealthService.createCar(car1);
+        WorkDto workDto1 = new WorkDto("1", carId, "workTypeId", "Oil Change", 5000, LocalDate.of(2023, 1, 10), 50.0);
+        WorkDto workDto2 = new WorkDto("2", carId, "workTypeId", "Oil Change", 8000, LocalDate.of(2023, 2, 15), 120.0);
+        workService.createWork(workDto1);
+        workService.createWork(workDto2);
+        WorkTypeDto workTypeDto1 = new WorkTypeDto("workTypeId", "Oil Change", 20000, 250);
+        workTypeService.createWorkType(workTypeDto1);
+        //WHEN THEN
+        mockMvc.perform(get("/api/works/{carId}/countdowns", carId))
+                .andExpect(status().isForbidden());
     }
 }

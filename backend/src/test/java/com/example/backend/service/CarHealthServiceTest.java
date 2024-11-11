@@ -28,11 +28,12 @@ class CarHealthServiceTest {
     @Test
     void getAllCars_shouldReturnCarList() {
         //GIVEN
-        Car car1 = new Car("1", "Model X", 2020, "VIN123", 10000);
-        Car car2 = new Car("2", "Model Y", 2021, "VIN456", 20000);
-        when(carHealthRepository.findAll()).thenReturn(List.of(car1, car2));
+        String user = "user1";
+        Car car1 = new Car("1", user, "Model X", 2020, "VIN123", 10000);
+        Car car2 = new Car("2", user, "Model Y", 2021, "VIN456", 20000);
+        when(carHealthRepository.findAllByUserId(user)).thenReturn(List.of(car1, car2));
         //WHEN
-        List<CarDto> result = carHealthService.getAllCars();
+        List<CarDto> result = carHealthService.getAllCars(user);
         //THEN
         assertEquals(2, result.size());
         assertEquals("1", result.get(0).id());
@@ -45,13 +46,13 @@ class CarHealthServiceTest {
         assertEquals(2021, result.get(1).year());
         assertEquals("VIN456", result.get(1).vin());
         assertEquals(20000, result.get(1).currentMileage());
-        verify(carHealthRepository, times(1)).findAll();
+        verify(carHealthRepository, times(1)).findAllByUserId(user);
     }
 
     @Test
     void getCarById_shouldReturnCar_whenCarExists() {
         //GIVEN
-        Car car = new Car("1", "Model X", 2020, "VIN123", 10000);
+        Car car = new Car("1", "user1", "Model X", 2020, "VIN123", 10000);
         when(carHealthRepository.findById("1")).thenReturn(Optional.of(car));
         //WHEN
         CarDto result = carHealthService.getCarById("1");
@@ -75,8 +76,8 @@ class CarHealthServiceTest {
     @Test
     void createCar_shouldSaveAndReturnCar() {
         //GIVEN
-        Car car = new Car("1", "Model X", 2020, "VIN123", 10000);
-        CarDto carDto = new CarDto("1", "Model X", 2020, "VIN123", 10000);
+        Car car = new Car("1", "user1", "Model X", 2020, "VIN123", 10000);
+        CarDto carDto = new CarDto("1", "user1", "Model X", 2020, "VIN123", 10000);
         when(carHealthRepository.save(car)).thenReturn(car);
         //WHEN THEN
         CarDto result = carHealthService.createCar(carDto);
@@ -90,10 +91,10 @@ class CarHealthServiceTest {
     @Test
     void updateCar_shouldUpdateAndReturnUpdatedCar_whenCarExists() {
         //GIVEN
-        Car existingCar = new Car("1", "Model X", 2020, "VIN123", 10000);
+        Car existingCar = new Car("1", "user1", "Model X", 2020, "VIN123", 10000);
         when(carHealthRepository.findById("1")).thenReturn(Optional.of(existingCar));
-        Car updatedCar = new Car("1", "Model S", 2021, "VIN1234", 20000);
-        CarDto updatedCarDto = new CarDto("1", "Model S", 2021, "VIN1234", 20000);
+        Car updatedCar = new Car("1", "user1", "Model S", 2021, "VIN1234", 20000);
+        CarDto updatedCarDto = new CarDto("1", "user1", "Model S", 2021, "VIN1234", 20000);
         //WHEN
         CarDto result = carHealthService.updateCar("1", updatedCarDto);
         //THEN
@@ -109,7 +110,7 @@ class CarHealthServiceTest {
     void updateCar_shouldThrowException_whenCarNotFound() {
         //GIVEN
         when(carHealthRepository.findById("1")).thenReturn(Optional.empty());
-        CarDto updatedCarDto = new CarDto("1", "Model Z", 2022, "VIN789", 10000);
+        CarDto updatedCarDto = new CarDto("1", "user1", "Model Z", 2022, "VIN789", 10000);
         //WHEN THEN
         assertThrows(NoSuchElementException.class, () -> carHealthService.updateCar("1", updatedCarDto));
         verify(carHealthRepository, times(1)).findById("1");
@@ -119,7 +120,7 @@ class CarHealthServiceTest {
     @Test
     void deleteCarById_shouldDeleteCar_whenCarExists() {
         //GIVEN
-        Car existingCar = new Car("1", "Model X", 2020, "VIN123", 10000);
+        Car existingCar = new Car("1", "user1", "Model X", 2020, "VIN123", 10000);
         when(carHealthRepository.findById("1")).thenReturn(Optional.of(existingCar));
         //WHEN
         carHealthService.deleteCarById("1");
@@ -136,5 +137,17 @@ class CarHealthServiceTest {
         assertThrows(NoSuchElementException.class, () -> carHealthService.deleteCarById("1"));
         verify(carHealthRepository, times(1)).findById("1");
         verify(carHealthRepository, times(0)).delete(any(Car.class));
+    }
+
+    @Test
+    void getOwner_schouldGetCarOwner() {
+        //GIVEN
+        String carId = "123";
+        when(carHealthRepository.findById(carId)).thenReturn(Optional.of(new Car("1", "user1", "Model X", 2020, "VIN123", 10000)));
+        //WHEN
+        String result = carHealthService.getOwner(carId);
+        //THEN
+        assertEquals("user1", result);
+        verify(carHealthRepository, times(1)).findById(carId);
     }
 }

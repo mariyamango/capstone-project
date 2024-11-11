@@ -4,6 +4,9 @@ import com.example.backend.dto.*;
 import com.example.backend.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -15,6 +18,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @RequestMapping("/api")
 public class CarHealthController {
+    public static final String UNAUTHORIZED_ERROR_MESSAGE = "Unauthorized to view works for this car";
     private final CarHealthService carHealthService;
     private final IdGeneratorService idGeneratorService;
     private final WorkService workService;
@@ -22,18 +26,24 @@ public class CarHealthController {
     private final CountdownCalculationService countdownCalculationService;
 
     @GetMapping("/cars")
-    public List<CarDto> cars() {
-        return carHealthService.getAllCars();
+    public List<CarDto> cars(@AuthenticationPrincipal OAuth2User oAuth2User) {
+        String username = oAuth2User.getName();
+        return carHealthService.getAllCars(username);
     }
 
     @GetMapping("/cars/{id}")
-    public CarDto car(@PathVariable String id) {
+    public CarDto car(@AuthenticationPrincipal OAuth2User oAuth2User, @PathVariable String id) {
+        String owner = carHealthService.getOwner(id);
+        if (!owner.equals(oAuth2User.getName())) {
+            throw new AccessDeniedException(UNAUTHORIZED_ERROR_MESSAGE);
+        }
         return carHealthService.getCarById(id);
     }
 
     @PostMapping("/cars")
-    public CarDto createCar(@RequestBody CreateCarRequest createCarRequest) {
-        return carHealthService.createCar(new CarDto(idGeneratorService.generateId(),createCarRequest.model(),createCarRequest.year(),createCarRequest.vin(), createCarRequest.currentMileage()));
+    public CarDto createCar(@AuthenticationPrincipal OAuth2User oAuth2User, @RequestBody CreateCarRequest createCarRequest) {
+        String userId = oAuth2User.getName();
+        return carHealthService.createCar(new CarDto(idGeneratorService.generateId(), userId, createCarRequest.model(),createCarRequest.year(),createCarRequest.vin(), createCarRequest.currentMileage()));
     }
 
     @PutMapping("/cars/{id}")
@@ -48,7 +58,11 @@ public class CarHealthController {
     }
 
     @GetMapping("/works/{carId}")
-    public List<WorkDto> work(@PathVariable String carId) {
+    public List<WorkDto> work(@AuthenticationPrincipal OAuth2User oAuth2User, @PathVariable String carId) {
+        String owner = carHealthService.getOwner(carId);
+        if (!owner.equals(oAuth2User.getName())) {
+            throw new AccessDeniedException(UNAUTHORIZED_ERROR_MESSAGE);
+        }
         return workService.getAllWorksByCarId(carId);
     }
 
@@ -74,7 +88,11 @@ public class CarHealthController {
     }
 
     @GetMapping("/works/{carId}/countdowns")
-    public WorkSummaryResponseDto getWorkCountdownsByCarId(@PathVariable String carId) {
+    public WorkSummaryResponseDto getWorkCountdownsByCarId(@AuthenticationPrincipal OAuth2User oAuth2User, @PathVariable String carId) {
+        String owner = carHealthService.getOwner(carId);
+        if (!owner.equals(oAuth2User.getName())) {
+            throw new AccessDeniedException(UNAUTHORIZED_ERROR_MESSAGE);
+        }
         int currentMileage = carHealthService.getCarById(carId).currentMileage();
         List<WorkDto> works = workService.getAllWorksByCarId(carId);
         Map<String, BigDecimal> totalByType = new HashMap<>();

@@ -37,9 +37,11 @@ To set up the project locally:
       ```
 
 4. **Database**:
-    - Ensure MongoDB is running locally or configure the database connection in the backend.
+    - Ensure MongoDB is running locally or configure the database connection in the backend. If using MongoDB Atlas, you may need to update the application.properties file with the correct database URI.
 
-Access the application at `http://localhost:5173`.
+5. **Access**:
+   - Access the application locally at `http://localhost:5173`.
+   - You can access the live version of the CarHealth Monitor on Heroku at: https://carhealth-monitor-395543a457fa.herokuapp.com/
 
 ## Need Help?
 

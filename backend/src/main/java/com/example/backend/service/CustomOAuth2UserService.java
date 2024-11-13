@@ -21,18 +21,43 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest request) {
         OAuth2User oAuth2User = super.loadUser(request);
-        AppUser appUser = userRepository.findById(oAuth2User.getName())
-                .orElseGet(() -> createAndSaveUser(oAuth2User));
-        return new DefaultOAuth2User(List.of(new SimpleGrantedAuthority(appUser.role())), oAuth2User.getAttributes(), "id");
+        System.out.println(oAuth2User.getAttributes());
+        String registrationId = request.getClientRegistration().getRegistrationId();
+        AppUser appUser;
+        if ("google".equals(registrationId)) {
+            appUser = processGoogleUser(oAuth2User);
+        } else if ("github".equals(registrationId)) {
+            appUser = processGithubUser(oAuth2User);
+        } else {
+            throw new IllegalArgumentException("Unsupported registration id " + registrationId);
+        }
+        String principalAttribute = "google".equals(registrationId) ? "sub" : "id";
+
+        return new DefaultOAuth2User(
+                List.of(new SimpleGrantedAuthority(appUser.role())),
+                oAuth2User.getAttributes(),
+                principalAttribute
+        );
     }
 
+    private AppUser processGoogleUser(OAuth2User oAuth2User) {
+        String googleId = oAuth2User.getAttribute("sub");
+        return userRepository.findById(googleId)
+                .orElseGet(() -> createAndSaveUser(googleId, oAuth2User.getAttribute("name"), oAuth2User.getAttribute("picture"), "USER"));
+    }
 
-    protected AppUser createAndSaveUser(OAuth2User oAuth2User) {
+    private AppUser processGithubUser(OAuth2User oAuth2User) {
+        String githubId = oAuth2User.getName();
+        return userRepository.findById(githubId)
+                .orElseGet(() -> createAndSaveUser(githubId, oAuth2User.getAttribute("login"), oAuth2User.getAttribute("avatar_url"), "USER"));
+    }
+
+    private AppUser createAndSaveUser(String id, String username, String avatarUrl, String role) {
         AppUser newUser = AppUser.builder()
-                .id(oAuth2User.getName())
-                .username(oAuth2User.getAttribute("login"))
-                .avatarUrl(oAuth2User.getAttribute("avatar_url"))
-                .role("USER")
+                .id(id)
+                .username(username)
+                .avatarUrl(avatarUrl)
+                .role(role)
                 .build();
 
         return userRepository.save(newUser);

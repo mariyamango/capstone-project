@@ -13,10 +13,14 @@ function App() {
     const [username, setUsername] = useState<string | undefined>();
     const navigate = useNavigate();
 
-    function login() {
+    function loginGithub() {
         const host = window.location.host === 'localhost:5173' ? 'http://localhost:8080' : window.location.origin
-
         window.open(host + '/oauth2/authorization/github', '_self')
+    }
+
+    function loginGoogle() {
+        const host = window.location.host === 'localhost:5173' ? 'http://localhost:8080' : window.location.origin
+        window.open(host + '/oauth2/authorization/google', '_self')
     }
 
     const loadUser = () => {
@@ -61,7 +65,8 @@ function App() {
                     </div>) :
                 <div className="logout-btn">
                     <h3 className="mb-4">Please log in to see your car list.</h3>
-                    <Button onClick={login}>Login with GitHub</Button>
+                    <Button className="mt-3" onClick={loginGithub}>Login with GitHub</Button>
+                    <Button className="mt-3" onClick={loginGoogle}>Login with Google</Button>
                 </div>
             }
         </>

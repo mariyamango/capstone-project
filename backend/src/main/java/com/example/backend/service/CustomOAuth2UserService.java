@@ -21,7 +21,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest request) {
         OAuth2User oAuth2User = super.loadUser(request);
-        System.out.println(oAuth2User.getAttributes());
         String registrationId = request.getClientRegistration().getRegistrationId();
         AppUser appUser;
         if ("google".equals(registrationId)) {
@@ -42,22 +41,28 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private AppUser processGoogleUser(OAuth2User oAuth2User) {
         String googleId = oAuth2User.getAttribute("sub");
+        if (googleId == null) {
+            throw new IllegalArgumentException("Google ID cannot be null");
+        }
         return userRepository.findById(googleId)
-                .orElseGet(() -> createAndSaveUser(googleId, oAuth2User.getAttribute("name"), oAuth2User.getAttribute("picture"), "USER"));
+                .orElseGet(() -> createAndSaveUser(googleId, oAuth2User.getAttribute("name"), oAuth2User.getAttribute("picture")));
     }
 
     private AppUser processGithubUser(OAuth2User oAuth2User) {
         String githubId = oAuth2User.getName();
+        if (githubId == null) {
+            throw new IllegalArgumentException("Google ID cannot be null");
+        }
         return userRepository.findById(githubId)
-                .orElseGet(() -> createAndSaveUser(githubId, oAuth2User.getAttribute("login"), oAuth2User.getAttribute("avatar_url"), "USER"));
+                .orElseGet(() -> createAndSaveUser(githubId, oAuth2User.getAttribute("login"), oAuth2User.getAttribute("avatar_url")));
     }
 
-    private AppUser createAndSaveUser(String id, String username, String avatarUrl, String role) {
+    private AppUser createAndSaveUser(String id, String username, String avatarUrl) {
         AppUser newUser = AppUser.builder()
                 .id(id)
                 .username(username)
                 .avatarUrl(avatarUrl)
-                .role(role)
+                .role("USER")
                 .build();
 
         return userRepository.save(newUser);

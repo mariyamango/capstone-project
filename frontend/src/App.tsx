@@ -64,7 +64,7 @@ function App() {
                         <Footer/>
                     </div>) :
                 <div className="logout-btn">
-                    <h3 className="mb-4">Please log in to see your car list.</h3>
+                    <h3 className="mb-4">Please log in to see your car list:</h3>
                     <Button className="mt-3" onClick={loginGithub}>Login with GitHub</Button>
                     <Button className="mt-3" onClick={loginGoogle}>Login with Google</Button>
                 </div>

@@ -8,7 +8,7 @@ interface CarHeaderProps {
 
 function CarHeader({ car, onAddWork }: CarHeaderProps) {
     return (
-        <Card.Header>
+        <Card.Header className="car-header">
             <h2>{car.model} - {car.year}</h2>
             <p>VIN: {car.vin}</p>
             <p>Current mileage: {car.currentMileage}km</p>

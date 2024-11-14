@@ -52,7 +52,7 @@ function App() {
     return (
         <>
             {username ? (
-                    <div className="app-container d-flex flex-column min-vh-100">
+                    <div className="app-container d-flex flex-column min-vh-100" data-bs-theme="dark">
                         <Header logout={logout}/>
                         <main className="flex-fill">
                             <Routes>

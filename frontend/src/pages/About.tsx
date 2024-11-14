@@ -1,8 +1,9 @@
 import React from 'react';
+import '../styles/About.css';
 
 const About: React.FC = () => {
     return (
-        <div className="container my-5">
+        <div className="container my-5 about-container">
             <h1 className="text-center mb-4">About CarHealth Monitor</h1>
             <p className="lead text-center">
                 CarHealth Monitor is a comprehensive vehicle maintenance tracking application designed to help car owners manage and organize their vehicle service history for multiple cars. By centralizing all maintenance records, it ensures that users can keep track of essential repairs and services, helping to maintain their vehicle’s performance and value.

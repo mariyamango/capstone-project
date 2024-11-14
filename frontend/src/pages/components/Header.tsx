@@ -2,7 +2,7 @@ import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import {Link} from "react-router-dom";
-import Logo from "../../../public/tools.svg";
+import Logo from "../../../public/tools-light.svg";
 import {Button} from "react-bootstrap";
 
 type HeaderProps = {
@@ -11,9 +11,9 @@ type HeaderProps = {
 
 const Header = ({logout}: HeaderProps) => {
     return (
-        <Navbar bg="secondary" data-bs-theme="dark" className="mb-3">
+        <Navbar bg="dark" variant="dark" data-bs-theme="dark" className="mb-3">
             <Container className="w-100">
-                <div className="header-container d-flex justify-content-between align-items-center mb-4">
+                <div className="header-container d-flex justify-content-between align-items-center w-100">
                     <div className="d-flex">
                         <Navbar.Brand as={Link} to="/">
                             <img src={Logo} alt="" className="logo"/>

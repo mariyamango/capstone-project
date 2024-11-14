@@ -1,0 +1,32 @@
+.about-container {
+    background-color: #0d1117;
+    color: #c9d1d9;
+    padding: 2rem;
+    border-radius: 8px;
+}
+
+.about-container h1, .about-container h2 {
+    color: #c9d1d9;
+}
+
+.about-container p, .about-container li, .about-container a {
+    color: #c9d1d9;
+}
+
+.about-container a:hover {
+    color: #c9d1d9;
+}
+
+.about-container .list-group-item {
+    background-color: #2a2a2a;
+    border: none !important;
+}
+
+.about-container .list-group-item strong {
+    color: #ffffff;
+}
+
+.full-page {
+    background-color: #181818;
+    color: #f8f9fa;
+}

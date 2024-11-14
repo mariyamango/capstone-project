@@ -57,7 +57,7 @@ function WorkModal({ show, editWork, newWork, onClose, onSave, onChange }: WorkM
     };
 
     return (
-        <Modal show={show} onHide={onClose}>
+        <Modal show={show} onHide={onClose} className="work-modal">
             <Modal.Header closeButton>
                 <Modal.Title>{editWork ? 'Edit Work' : 'Add Work'}</Modal.Title>
             </Modal.Header>
@@ -67,6 +67,7 @@ function WorkModal({ show, editWork, newWork, onClose, onSave, onChange }: WorkM
                         <Form.Label>Type</Form.Label>
                         <Form.Select
                             value={editWork ? editWork.workTypeId : newWork.workTypeId || ""}
+                            className="custom-input"
                             onChange={handleWorkTypeChange}
                             required
                         >
@@ -83,6 +84,7 @@ function WorkModal({ show, editWork, newWork, onClose, onSave, onChange }: WorkM
                             value={editWork ? editWork.mileage : newWork.mileage || ""}
                             onChange={(e: ChangeEvent<HTMLInputElement>) => onChange('mileage', parseInt(e.target.value))}
                             required
+                            className="custom-input"
                         />
                     </Form.Group>
                     <Form.Group>
@@ -92,6 +94,7 @@ function WorkModal({ show, editWork, newWork, onClose, onSave, onChange }: WorkM
                             value={editWork ? editWork.date : newWork.date || ""}
                             onChange={(e: ChangeEvent<HTMLInputElement>) => onChange('date', e.target.value)}
                             required
+                            className="custom-input"
                         />
                     </Form.Group>
                     <Form.Group>
@@ -106,12 +109,13 @@ function WorkModal({ show, editWork, newWork, onClose, onSave, onChange }: WorkM
                                 onChange('price', isNaN(value) ? 0 : value);
                             }}
                             required
+                            className="custom-input"
                         />
                     </Form.Group>
                 </Form>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={onClose}>Cancel</Button>
+                <Button variant="danger" onClick={onClose}>Cancel</Button>
                 <Button variant="primary" onClick={handleSave} disabled={!isFormValid}>
                     {editWork ? 'Save Changes' : 'Add Work'}
                 </Button>

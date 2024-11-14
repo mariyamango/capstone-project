@@ -105,7 +105,7 @@ function CarDetail() {
                 <>
                     <CarHeader car={car} onAddWork={openAddModal}/>
                     <hr className="my-4"/>
-                    <h4>Works:</h4>
+                    <h4 className="car-detail-header">Works:</h4>
                     {Object.entries(worksByType).map(([type, workList]) => (
                         <WorkGroup
                             key={type}
@@ -116,7 +116,7 @@ function CarDetail() {
                         />
                     ))}
                     <hr className="my-4"/>
-                    <div className="my-4">
+                    <div className="amount-info">
                         <div>
                             <h5>Total amount for each type of work:</h5>
                             <ul>

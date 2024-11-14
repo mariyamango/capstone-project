@@ -10,6 +10,7 @@ function Home() {
     const [showEditModal, setShowEditModal] = useState(false);
     const [newCar, setNewCar] = useState({model: '', year: 0, vin: '', currentMileage: 0});
     const [editableCar, setEditableCar] = useState<Car | null>(null);
+    const [isFormValid, setIsFormValid] = useState(false);
 
     const fetchData = async () => {
         try {
@@ -19,6 +20,19 @@ function Home() {
             console.log('Error fetching data', error);
         }
     };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    useEffect(() => {
+        const validateForm = () => {
+            const isAddFormValid = Boolean(newCar.model && newCar.year > 0 && newCar.vin && newCar.currentMileage > 0);
+            const isEditFormValid = Boolean(editableCar && editableCar.model && editableCar.year > 0 && editableCar.vin && editableCar.currentMileage > 0);
+            setIsFormValid(showAddModal ? isAddFormValid : isEditFormValid);
+        };
+        validateForm();
+    }, [newCar, editableCar, showAddModal, showEditModal]);
 
     const handleAddCar = async () => {
         try {
@@ -65,7 +79,7 @@ function Home() {
     return (
         <Container className="my-5">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h1>Your cars:</h1>
+                <h1 className="your-cars-text">You cars:</h1>
                 <Button onClick={() => setShowAddModal(true)} variant="primary">Add Car</Button>
             </div>
 
@@ -73,7 +87,7 @@ function Home() {
                 {data.map((car) => (
                     <Col key={car.id}>
                         <Card className="h-100">
-                            <Link to={`/car/${car.id}`} style={{textDecoration: 'none', color: 'inherit'}}>
+                            <Link to={`/car/${car.id}`} style={{textDecoration: 'none', color: 'inherit'}} className="card-link">
                                 <Card.Body>
                                     <Card.Title>{car.model}</Card.Title>
                                     <Card.Text><strong>Year:</strong> {car.year}</Card.Text>
@@ -92,7 +106,7 @@ function Home() {
                 ))}
             </Row>
 
-            <Modal show={showAddModal} onHide={() => setShowAddModal(false)}>
+            <Modal show={showAddModal} onHide={() => setShowAddModal(false)} className="work-modal">
             <Modal.Header closeButton>
                     <Modal.Title>Add New Car</Modal.Title>
                 </Modal.Header>
@@ -100,33 +114,49 @@ function Home() {
                     <Form>
                         <Form.Group controlId="formModel">
                             <Form.Label>Model</Form.Label>
-                            <Form.Control type="text" placeholder="Enter model"
-                                          onChange={(e) => setNewCar({...newCar, model: e.target.value})}/>
+                            <Form.Control type="text"
+                                          placeholder="Enter model"
+                                          onChange={(e) => setNewCar({...newCar, model: e.target.value})}
+                                          className="custom-input"
+                                          required
+                            />
                         </Form.Group>
                         <Form.Group controlId="formYear">
                             <Form.Label>Year</Form.Label>
-                            <Form.Control type="number" placeholder="Enter year"
-                                          onChange={(e) => setNewCar({...newCar, year: Number(e.target.value)})}/>
+                            <Form.Control type="number"
+                                          placeholder="Enter year"
+                                          onChange={(e) => setNewCar({...newCar, year: Number(e.target.value)})}
+                                          className="custom-input"
+                                          required
+                            />
                         </Form.Group>
                         <Form.Group controlId="formVin">
                             <Form.Label>VIN</Form.Label>
-                            <Form.Control type="text" placeholder="Enter VIN"
-                                          onChange={(e) => setNewCar({...newCar, vin: e.target.value})}/>
+                            <Form.Control type="text"
+                                          placeholder="Enter VIN"
+                                          onChange={(e) => setNewCar({...newCar, vin: e.target.value})}
+                                          className="custom-input"
+                                          required
+                            />
                         </Form.Group>
                         <Form.Group controlId="formCurrentMileage">
                             <Form.Label>Current Mileage</Form.Label>
-                            <Form.Control type="text" placeholder="Enter current mileage in km"
-                                          onChange={(e) => setNewCar({...newCar, currentMileage: Number(e.target.value)})}/>
+                            <Form.Control type="text"
+                                          placeholder="Enter current mileage in km"
+                                          onChange={(e) => setNewCar({...newCar, currentMileage: Number(e.target.value)})}
+                                          className="custom-input"
+                                          required
+                            />
                         </Form.Group>
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowAddModal(false)}>Close</Button>
-                    <Button variant="primary" onClick={handleAddCar}>Add Car</Button>
+                    <Button variant="danger" onClick={() => setShowAddModal(false)}>Close</Button>
+                    <Button variant="primary" onClick={handleAddCar} disabled={!isFormValid}>Add Car</Button>
                 </Modal.Footer>
             </Modal>
 
-            <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
+            <Modal show={showEditModal} onHide={() => setShowEditModal(false)} className="work-modal">
                 <Modal.Header closeButton>
                     <Modal.Title>Edit Car</Modal.Title>
                 </Modal.Header>
@@ -135,36 +165,51 @@ function Home() {
                         <Form>
                             <Form.Group controlId="formEditModel">
                                 <Form.Label>Model</Form.Label>
-                                <Form.Control type="text" placeholder="Enter model" value={editableCar.model}
+                                <Form.Control type="text" placeholder="Enter model"
+                                              value={editableCar.model}
                                               onChange={(e) => setEditableCar({
                                                   ...editableCar,
                                                   model: e.target.value
-                                              })}/>
+                                              })}
+                                              className="custom-input"
+                                />
                             </Form.Group>
                             <Form.Group controlId="formEditYear">
                                 <Form.Label>Year</Form.Label>
-                                <Form.Control type="number" placeholder="Enter year" value={editableCar.year}
+                                <Form.Control type="number"
+                                              placeholder="Enter year"
+                                              value={editableCar.year}
                                               onChange={(e) => setEditableCar({
                                                   ...editableCar,
                                                   year: Number(e.target.value)
-                                              })}/>
+                                              })}
+                                              className="custom-input"
+                                />
                             </Form.Group>
                             <Form.Group controlId="formEditVin">
                                 <Form.Label>VIN</Form.Label>
-                                <Form.Control type="text" placeholder="Enter VIN" value={editableCar.vin}
-                                              onChange={(e) => setEditableCar({...editableCar, vin: e.target.value})}/>
+                                <Form.Control type="text"
+                                              placeholder="Enter VIN"
+                                              value={editableCar.vin}
+                                              onChange={(e) => setEditableCar({...editableCar, vin: e.target.value})}
+                                              className="custom-input"
+                                />
                             </Form.Group>
                             <Form.Group controlId="formEditCurrentMileage">
                                 <Form.Label>Current Mileage</Form.Label>
-                                <Form.Control type="text" placeholder="Enter Current Mileage in km" value={editableCar.currentMileage}
-                                              onChange={(e) => setEditableCar({...editableCar, currentMileage: Number(e.target.value)})}/>
+                                <Form.Control type="text"
+                                              placeholder="Enter Current Mileage in km"
+                                              value={editableCar.currentMileage}
+                                              onChange={(e) => setEditableCar({...editableCar, currentMileage: Number(e.target.value)})}
+                                              className="custom-input"
+                                />
                             </Form.Group>
                         </Form>
                     )}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowEditModal(false)}>Cancel</Button>
-                    <Button variant="primary" onClick={handleEditCarSave}>Save</Button>
+                    <Button variant="danger" onClick={() => setShowEditModal(false)}>Cancel</Button>
+                    <Button variant="primary" onClick={handleEditCarSave} disabled={!isFormValid}>Save</Button>
                 </Modal.Footer>
             </Modal>
         </Container>

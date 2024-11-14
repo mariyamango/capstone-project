@@ -58,13 +58,15 @@ function WorkGroup({ type, workCountdowns, onEditWork, onDeleteWork }: WorkGroup
             {expanded && (
                 <ListGroup>
                     {workCountdowns.map(work => (
-                        <ListGroup.Item key={work.id}>
+                        <ListGroup.Item key={work.id} className="d-flex justify-content-between align-items-center">
                             Date: {new Date(work.date).toLocaleDateString()},
                             Mileage: {work.mileage} km, Cost: €{work.price}
-                            <Button variant="link" onClick={() => onEditWork(work)}>Edit</Button>
-                            <Button variant="link" onClick={() => onDeleteWork(work.id, type)}>Delete</Button>
+                            <div className="d-flex gap-2">
+                                <Button variant="warning" onClick={() => onEditWork(work)}>Edit</Button>
+                                <Button variant="danger" onClick={() => onDeleteWork(work.id, type)}>Delete</Button>
+                            </div>
                         </ListGroup.Item>
-                    ))}
+                        ))}
                 </ListGroup>
             )}
         </div>

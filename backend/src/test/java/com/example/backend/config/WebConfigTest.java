@@ -12,25 +12,25 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 @AutoConfigureMockMvc
 @SpringBootTest
-public class WebConfigTest {
+class WebConfigTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    public void testRedirectCarId() throws Exception {
+    void testRedirectCarId() throws Exception {
         mockMvc.perform(get("/car/123"))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
     @Test
-    public void testRedirectAbout() throws Exception {
+    void testRedirectAbout() throws Exception {
         mockMvc.perform(get("/about"))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
     @Test
-    public void testRedirectHome() throws Exception {
+    void testRedirectHome() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }

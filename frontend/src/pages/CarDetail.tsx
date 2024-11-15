@@ -141,6 +141,7 @@ function CarDetail() {
                 show={showModal}
                 editWork={editWork}
                 newWork={newWork}
+                currentMileage={car ? car.currentMileage : 0}
                 onClose={closeModal}
                 onSave={handleSaveWork}
                 onChange={(field, value) => {

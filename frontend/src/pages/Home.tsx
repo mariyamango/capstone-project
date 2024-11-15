@@ -1,6 +1,6 @@
 import axios from 'axios';
 import {useEffect, useState} from "react";
-import {Button, Card, Col, Container, Form, Modal, Row} from 'react-bootstrap';
+import {Alert, Button, Card, Col, Container, Form, Modal, Row} from 'react-bootstrap';
 import {Car} from "./types/Car.tsx";
 import {Link} from "react-router-dom";
 
@@ -11,6 +11,7 @@ function Home() {
     const [newCar, setNewCar] = useState({model: '', year: 0, vin: '', currentMileage: 0});
     const [editableCar, setEditableCar] = useState<Car | null>(null);
     const [isFormValid, setIsFormValid] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const fetchData = async () => {
         try {
@@ -40,8 +41,19 @@ function Home() {
             setData([...data, response.data]);
             setShowAddModal(false);
             setNewCar({model: '', year: 0, vin: '', currentMileage: 0});
-        } catch (error) {
-            console.log('Error adding car', error);
+            setErrorMessage(null);
+        } catch (error: unknown) {
+            if (axios.isAxiosError(error)) {
+                console.log('Error adding car', error);
+                if (error.response && error.response.status === 400) {
+                    setErrorMessage("A car with this VIN already exists for the user.");
+                } else {
+                    setErrorMessage("An unexpected error occurred. Please try again.");
+                }
+            } else {
+                console.log('Unexpected error:', error);
+                setErrorMessage("An unknown error occurred. Please try again.");
+            }
         }
     };
 
@@ -57,8 +69,18 @@ function Home() {
                 setData(data.map(car => (car.id === editableCar.id ? response.data : car)));
                 setShowEditModal(false);
                 setEditableCar(null);
-            } catch (error) {
-                console.log('Error editing car', error);
+            } catch (error: unknown) {
+                if (axios.isAxiosError(error)) {
+                    console.log('Error adding car', error);
+                    if (error.response && error.response.status === 400) {
+                        setErrorMessage("A car with this VIN already exists for the user.");
+                    } else {
+                        setErrorMessage("An unexpected error occurred. Please try again.");
+                    }
+                } else {
+                    console.log('Unexpected error:', error);
+                    setErrorMessage("An unknown error occurred. Please try again.");
+                }
             }
         }
     };
@@ -87,7 +109,8 @@ function Home() {
                 {data.map((car) => (
                     <Col key={car.id}>
                         <Card className="h-100">
-                            <Link to={`/car/${car.id}`} style={{textDecoration: 'none', color: 'inherit'}} className="card-link">
+                            <Link to={`/car/${car.id}`} style={{textDecoration: 'none', color: 'inherit'}}
+                                  className="card-link">
                                 <Card.Body>
                                     <Card.Title>{car.model}</Card.Title>
                                     <Card.Text><strong>Year:</strong> {car.year}</Card.Text>
@@ -107,15 +130,23 @@ function Home() {
             </Row>
 
             <Modal show={showAddModal} onHide={() => setShowAddModal(false)} className="work-modal">
-            <Modal.Header closeButton>
+                <Modal.Header closeButton>
                     <Modal.Title>Add New Car</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                    {errorMessage && <Alert
+                        variant="danger"
+                        dismissible
+                        onClose={() => setErrorMessage(null)}
+                    >
+                        {errorMessage}
+                    </Alert>
+                    }
                     <Form>
                         <Form.Group controlId="formModel">
                             <Form.Label>Model</Form.Label>
                             <Form.Control type="text"
-                                          placeholder="Enter model"
+                                          placeholder="Enter car model (e.g., Tesla Model 3)"
                                           onChange={(e) => setNewCar({...newCar, model: e.target.value})}
                                           className="custom-input"
                                           required
@@ -124,7 +155,7 @@ function Home() {
                         <Form.Group controlId="formYear">
                             <Form.Label>Year</Form.Label>
                             <Form.Control type="number"
-                                          placeholder="Enter year"
+                                          placeholder="Enter year of manufacture"
                                           onChange={(e) => setNewCar({...newCar, year: Number(e.target.value)})}
                                           className="custom-input"
                                           required
@@ -133,7 +164,7 @@ function Home() {
                         <Form.Group controlId="formVin">
                             <Form.Label>VIN</Form.Label>
                             <Form.Control type="text"
-                                          placeholder="Enter VIN"
+                                          placeholder="Enter VIN (Vehicle Identification Number)"
                                           onChange={(e) => setNewCar({...newCar, vin: e.target.value})}
                                           className="custom-input"
                                           required
@@ -141,9 +172,12 @@ function Home() {
                         </Form.Group>
                         <Form.Group controlId="formCurrentMileage">
                             <Form.Label>Current Mileage</Form.Label>
-                            <Form.Control type="text"
+                            <Form.Control type="number"
                                           placeholder="Enter current mileage in km"
-                                          onChange={(e) => setNewCar({...newCar, currentMileage: Number(e.target.value)})}
+                                          onChange={(e) => setNewCar({
+                                              ...newCar,
+                                              currentMileage: Number(e.target.value)
+                                          })}
                                           className="custom-input"
                                           required
                             />
@@ -161,6 +195,14 @@ function Home() {
                     <Modal.Title>Edit Car</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                    {errorMessage && <Alert
+                        variant="danger"
+                        dismissible
+                        onClose={() => setErrorMessage(null)}
+                    >
+                        {errorMessage}
+                    </Alert>
+                    }
                     {editableCar && (
                         <Form>
                             <Form.Group controlId="formEditModel">
@@ -191,7 +233,10 @@ function Home() {
                                 <Form.Control type="text"
                                               placeholder="Enter VIN"
                                               value={editableCar.vin}
-                                              onChange={(e) => setEditableCar({...editableCar, vin: e.target.value})}
+                                              onChange={(e) => setEditableCar({
+                                                  ...editableCar,
+                                                  vin: e.target.value
+                                              })}
                                               className="custom-input"
                                 />
                             </Form.Group>
@@ -200,7 +245,10 @@ function Home() {
                                 <Form.Control type="text"
                                               placeholder="Enter Current Mileage in km"
                                               value={editableCar.currentMileage}
-                                              onChange={(e) => setEditableCar({...editableCar, currentMileage: Number(e.target.value)})}
+                                              onChange={(e) => setEditableCar({
+                                                  ...editableCar,
+                                                  currentMileage: Number(e.target.value)
+                                              })}
                                               className="custom-input"
                                 />
                             </Form.Group>

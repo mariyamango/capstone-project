@@ -89,6 +89,18 @@ class CarHealthServiceTest {
     }
 
     @Test
+    void createCar_shouldThrowExceptionWhenVinExists() {
+        //GIVEN
+        Car car = new Car("1", "user1", "Model X", 2020, "VIN123", 10000);
+        when(carHealthRepository.findAllByUserId("user1")).thenReturn(List.of(car));
+        CarDto carDto = new CarDto("1", "user1", "Model X", 2020, "VIN123", 10000);
+        //WHEN THEN
+        assertThrows(IllegalArgumentException.class, () -> carHealthService.createCar(carDto));
+        verify(carHealthRepository, times(1)).findAllByUserId("user1");
+        verify(carHealthRepository, times(0)).save(any(Car.class));
+    }
+
+    @Test
     void updateCar_shouldUpdateAndReturnUpdatedCar_whenCarExists() {
         //GIVEN
         Car existingCar = new Car("1", "user1", "Model X", 2020, "VIN123", 10000);
@@ -114,6 +126,21 @@ class CarHealthServiceTest {
         //WHEN THEN
         assertThrows(NoSuchElementException.class, () -> carHealthService.updateCar("1", updatedCarDto));
         verify(carHealthRepository, times(1)).findById("1");
+        verify(carHealthRepository, times(0)).save(any(Car.class));
+    }
+
+    @Test
+    void updateCar_shouldThrowException_whenVinExists() {
+        //GIVEN
+        Car car1 = new Car("1", "user1", "Model X", 2020, "VIN124", 10000);
+        Car car2 = new Car("2", "user1", "Model X", 2020, "VIN123", 10000);
+        when(carHealthRepository.findAllByUserId("user1")).thenReturn(List.of(car1,car2));
+        when(carHealthRepository.findById("1")).thenReturn(Optional.of(car1));
+        CarDto updatedCarDto = new CarDto("1", "user1", "Model Z", 2022, "VIN123", 50000);
+        //WHEN THEN
+        assertThrows(IllegalArgumentException.class, () -> carHealthService.updateCar("1", updatedCarDto));
+        verify(carHealthRepository, times(1)).findById("1");
+        verify(carHealthRepository, times(1)).findAllByUserId("user1");
         verify(carHealthRepository, times(0)).save(any(Car.class));
     }
 

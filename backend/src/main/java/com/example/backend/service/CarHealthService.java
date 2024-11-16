@@ -26,13 +26,24 @@ public class CarHealthService {
     }
 
     public CarDto createCar(CarDto carDto) {
+        boolean isExisted = carHealthRepository.findAllByUserId(carDto.userId()).stream()
+                .anyMatch(car -> car.vin().equals(carDto.vin()));
+        if (isExisted) {
+            throw new IllegalArgumentException("A car with this VIN already exists for the user.");
+        }
         Car car = new Car(carDto.id(), carDto.userId(), carDto.model(), carDto.year(), carDto.vin(), carDto.currentMileage());
         carHealthRepository.save(car);
         return carDto;
     }
 
     public CarDto updateCar(String id, CarDto carDto) {
-        Car car = carHealthRepository.findById(id).orElseThrow(NoSuchElementException::new);
+        Car existingCar = carHealthRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("There is no car with this id."));
+        boolean isExisted = carHealthRepository.findAllByUserId(carDto.userId()).stream()
+                .anyMatch(car -> car.vin().equals(carDto.vin()) && !car.id().equals(id));
+        if (isExisted) {
+            throw new IllegalArgumentException("A car with this VIN already exists for the user.");
+        }
         Car newCar = new Car(id, carDto.userId(), carDto.model(), carDto.year(), carDto.vin(), carDto.currentMileage());
         carHealthRepository.save(newCar);
         return carDto;

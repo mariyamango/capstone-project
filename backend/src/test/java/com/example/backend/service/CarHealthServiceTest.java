@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -177,4 +178,35 @@ class CarHealthServiceTest {
         assertEquals("user1", result);
         verify(carHealthRepository, times(1)).findById(carId);
     }
+
+    @Test
+    void checkOwner_shouldThrowAccessDeniedException_whenUserIsNotOwner() {
+        // GIVEN
+        String carId = "123";
+        String username = "user2";
+        Car car = new Car("123", "user1", "Model X", 2020, "VIN123", 10000);
+        when(carHealthRepository.findById(carId)).thenReturn(Optional.of(car));
+
+        // WHEN & THEN
+        AccessDeniedException thrown = assertThrows(AccessDeniedException.class, () -> {
+            carHealthService.checkOwner(carId, username);
+        });
+
+        assertEquals("Unauthorized to view works for this car", thrown.getMessage());
+        verify(carHealthRepository, times(1)).findById(carId);
+    }
+
+    @Test
+    void checkOwner_shouldNotThrow_whenUserIsOwner() {
+        // GIVEN
+        String carId = "123";
+        String username = "user1";
+        Car car = new Car("123", "user1", "Model X", 2020, "VIN123", 10000);
+        when(carHealthRepository.findById(carId)).thenReturn(Optional.of(car));
+
+        // WHEN & THEN
+        assertDoesNotThrow(() -> carHealthService.checkOwner(carId, username));
+        verify(carHealthRepository, times(1)).findById(carId);
+    }
+
 }

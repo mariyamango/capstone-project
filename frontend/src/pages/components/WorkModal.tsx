@@ -67,7 +67,7 @@ function WorkModal({show, editWork, newWork, currentMileage, onClose, onSave, on
             setShowAlert(true);
         } else {
             onChange('date', selectedDate);
-            setShowAlert(false); // Reset alert
+            setShowAlert(false);
         }
     };
 
@@ -76,9 +76,12 @@ function WorkModal({show, editWork, newWork, currentMileage, onClose, onSave, on
         if (selectedMileage > currentMileage) {
             setAlertMessage("Mileage cannot exceed the current mileage of the car");
             setShowAlert(true);
-        } else {
+        } else if (selectedMileage < 0) {
+            setAlertMessage("Mileage should be positive");
+            setShowAlert(true);
+        }else {
             onChange('mileage', selectedMileage);
-            setShowAlert(false); // Reset alert
+            setShowAlert(false);
         }
     };
 
@@ -135,7 +138,13 @@ function WorkModal({show, editWork, newWork, currentMileage, onClose, onSave, on
                                 value={editWork ? editWork.price : newWork.price || ""}
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => {
                                     const value = parseFloat(e.target.value);
-                                    onChange('price', isNaN(value) ? 0 : value);
+                                    if (value <= 0) {
+                                        setAlertMessage("Incorrect price value");
+                                        setShowAlert(true);
+                                    } else {
+                                        onChange('price', value);
+                                        setShowAlert(false);
+                                    }
                                 }}
                                 placeholder="Enter the cost of the work"
                                 className="custom-input"

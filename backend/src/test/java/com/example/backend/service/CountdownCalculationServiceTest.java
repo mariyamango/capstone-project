@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CountdownCalculationServiceTest {
 
@@ -76,5 +77,29 @@ class CountdownCalculationServiceTest {
         //THEN
         assertEquals(10000 - (15000 - 14000), result.mileageLeft());
         assertEquals(0, result.daysLeft());
+    }
+
+    @Test
+    void calculateCountdown_shouldThrowException_whenMileageDurationIsNegative() {
+        //GIVEN
+        int mileageDuration = -10;
+        int timeDuration = 10;
+        int currentMileage = 15000;
+        int lastWorkMileage = 14000;
+        LocalDate lastWorkDate = LocalDate.now();
+        //WHEN THEN
+        assertThrows(IllegalArgumentException.class, () -> {countdownCalculationService.calculateCountdown(mileageDuration,timeDuration,currentMileage,lastWorkMileage,lastWorkDate);});
+    }
+
+    @Test
+    void calculateCountdown_shouldThrowException_whenTimeDurationIsNegative() {
+        //GIVEN
+        int mileageDuration = 1000;
+        int timeDuration = -10;
+        int currentMileage = 15000;
+        int lastWorkMileage = 14000;
+        LocalDate lastWorkDate = LocalDate.now();
+        //WHEN THEN
+        assertThrows(IllegalArgumentException.class, () -> {countdownCalculationService.calculateCountdown(mileageDuration,timeDuration,currentMileage,lastWorkMileage,lastWorkDate);});
     }
 }

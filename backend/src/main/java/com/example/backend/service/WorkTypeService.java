@@ -16,18 +16,36 @@ public class WorkTypeService {
 
     public List<WorkTypeDto> getAllWorkTypes() {
         return workTypeRepository.findAllByOrderByWorkTypeNameAsc().stream()
-                .map(workType -> new WorkTypeDto(workType.id(), workType.workTypeName(), workType.mileageDuration(), workType.timeDuration()))
+                .map(this::convertToDto)
                 .toList();
     }
 
     public WorkTypeDto createWorkType(WorkTypeDto workTypeDto) {
-        workTypeRepository.save(new WorkType(workTypeDto.id(), workTypeDto.workTypeName(), workTypeDto.mileageDuration(), workTypeDto.timeDuration()));
+        workTypeRepository.save(convertToEntity(workTypeDto, workTypeDto.id()));
         return workTypeDto;
     }
 
     public WorkTypeDto getWorkTypeById(String id) {
         return workTypeRepository.findById(id)
-                .map(workType -> new WorkTypeDto(workType.id(), workType.workTypeName(), workType.mileageDuration(), workType.timeDuration()))
-                .orElseThrow(() -> new NoSuchElementException("WorkType not found"));
+                .map(this::convertToDto)
+                .orElseThrow(() -> new NoSuchElementException("WorkType with ID " + id + " not found"));
+    }
+
+    private WorkTypeDto convertToDto(WorkType workType) {
+        return new WorkTypeDto(
+                workType.id(),
+                workType.workTypeName(),
+                workType.mileageDuration(),
+                workType.timeDuration()
+        );
+    }
+
+    private WorkType convertToEntity(WorkTypeDto workTypeDto, String id) {
+        return new WorkType(
+                id,
+                workTypeDto.workTypeName(),
+                workTypeDto.mileageDuration(),
+                workTypeDto.timeDuration()
+        );
     }
 }

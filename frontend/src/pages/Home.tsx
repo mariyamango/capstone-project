@@ -35,6 +35,20 @@ function Home() {
         validateForm();
     }, [newCar, editableCar, showAddModal, showEditModal]);
 
+    const handleError = (error: unknown) => {
+        if (axios.isAxiosError(error)) {
+            console.log('Error:', error);
+            if (error.response && error.response.status === 400) {
+                setErrorMessage("A car with this VIN already exists for the user.");
+            } else {
+                setErrorMessage("An unexpected error occurred. Please try again.");
+            }
+        } else {
+            console.log('Unexpected error:', error);
+            setErrorMessage("An unknown error occurred. Please try again.");
+        }
+    };
+
     const handleAddCar = async () => {
         try {
             const response = await axios.post("/api/cars", newCar);
@@ -43,17 +57,7 @@ function Home() {
             setNewCar({model: '', year: 0, vin: '', currentMileage: 0});
             setErrorMessage(null);
         } catch (error: unknown) {
-            if (axios.isAxiosError(error)) {
-                console.log('Error adding car', error);
-                if (error.response && error.response.status === 400) {
-                    setErrorMessage("A car with this VIN already exists for the user.");
-                } else {
-                    setErrorMessage("An unexpected error occurred. Please try again.");
-                }
-            } else {
-                console.log('Unexpected error:', error);
-                setErrorMessage("An unknown error occurred. Please try again.");
-            }
+            handleError(error);
         }
     };
 
@@ -70,17 +74,7 @@ function Home() {
                 setShowEditModal(false);
                 setEditableCar(null);
             } catch (error: unknown) {
-                if (axios.isAxiosError(error)) {
-                    console.log('Error adding car', error);
-                    if (error.response && error.response.status === 400) {
-                        setErrorMessage("A car with this VIN already exists for the user.");
-                    } else {
-                        setErrorMessage("An unexpected error occurred. Please try again.");
-                    }
-                } else {
-                    console.log('Unexpected error:', error);
-                    setErrorMessage("An unknown error occurred. Please try again.");
-                }
+                handleError(error);
             }
         }
     };
@@ -93,10 +87,6 @@ function Home() {
             console.log('Error deleting car', error);
         }
     };
-
-    useEffect(() => {
-        fetchData();
-    }, []);
 
     return (
         <Container className="my-5">
@@ -214,18 +204,25 @@ function Home() {
                                                   model: e.target.value
                                               })}
                                               className="custom-input"
+                                              required
                                 />
                             </Form.Group>
                             <Form.Group controlId="formEditYear">
                                 <Form.Label>Year</Form.Label>
                                 <Form.Control type="number"
                                               placeholder="Enter year"
-                                              value={editableCar.year}
-                                              onChange={(e) => setEditableCar({
-                                                  ...editableCar,
-                                                  year: Number(e.target.value)
-                                              })}
+                                              value={editableCar.year || ''}
+                                              onChange={(e) => {
+                                                  const value = e.target.value;
+                                                  if (editableCar) {
+                                                      setEditableCar({
+                                                          ...editableCar,
+                                                          year: value === '' ? 0 : Number(value)
+                                                      });
+                                                  }
+                                              }}
                                               className="custom-input"
+                                              required
                                 />
                             </Form.Group>
                             <Form.Group controlId="formEditVin">
@@ -238,18 +235,25 @@ function Home() {
                                                   vin: e.target.value
                                               })}
                                               className="custom-input"
+                                              required
                                 />
                             </Form.Group>
                             <Form.Group controlId="formEditCurrentMileage">
                                 <Form.Label>Current Mileage</Form.Label>
-                                <Form.Control type="text"
+                                <Form.Control type="number"
                                               placeholder="Enter Current Mileage in km"
-                                              value={editableCar.currentMileage}
-                                              onChange={(e) => setEditableCar({
-                                                  ...editableCar,
-                                                  currentMileage: Number(e.target.value)
-                                              })}
+                                              value={editableCar.currentMileage || ''}
+                                              onChange={(e) => {
+                                                  const value = e.target.value;
+                                                  if (editableCar) {
+                                                      setEditableCar({
+                                                          ...editableCar,
+                                                          currentMileage: value === '' ? 0 : Number(value)
+                                                      });
+                                                  }
+                                              }}
                                               className="custom-input"
+                                              required
                                 />
                             </Form.Group>
                         </Form>

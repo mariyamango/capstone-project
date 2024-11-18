@@ -25,7 +25,7 @@ public class CarHealthService {
 
     public CarDto getCarById(String id) {
         Car car = carHealthRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Car with id " + id + " not found."));
+                .orElseThrow(() -> new NoSuchElementException(notFoundErrorText(id)));
         return convertToDto(car);
     }
 
@@ -39,7 +39,7 @@ public class CarHealthService {
 
     public CarDto updateCar(String id, CarDto carDto) {
         carHealthRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Car with id " + id + " not found."));
+                .orElseThrow(() -> new NoSuchElementException(notFoundErrorText(id)));
         validateCarVinUniqueness(carDto.userId(), carDto.vin(), id);
         Car updatedCar = convertToEntity(carDto, id);
         carHealthRepository.save(updatedCar);
@@ -49,14 +49,14 @@ public class CarHealthService {
 
     public void deleteCarById(String id) {
         carHealthRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Car with id " + id + " not found."));
+                .orElseThrow(() -> new NoSuchElementException(notFoundErrorText(id)));
         carHealthRepository.deleteById(id);
         log.info("Deleted Car with id: {}", id);
     }
 
     public String getOwner(String carId) {
         Car car = carHealthRepository.findById(carId)
-                .orElseThrow(() -> new NoSuchElementException("Car with id " + carId + " not found."));
+                .orElseThrow(() -> new NoSuchElementException(notFoundErrorText(carId)));
         return car.userId();
     }
 
@@ -74,5 +74,9 @@ public class CarHealthService {
         if (isExisted) {
             throw new IllegalArgumentException("A car with this VIN already exists for the user.");
         }
+    }
+
+    private String notFoundErrorText (String id) {
+        return "Car with id " + id + " not found";
     }
 }

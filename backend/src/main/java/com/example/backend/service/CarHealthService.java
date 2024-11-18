@@ -5,6 +5,7 @@ import com.example.backend.model.Car;
 import com.example.backend.repository.CarHealthRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.Objects;
 @Service
 @AllArgsConstructor
 public class CarHealthService {
+    public static final String UNAUTHORIZED_ERROR_MESSAGE = "Unauthorized to view works for this car";
     private final CarHealthRepository carHealthRepository;
 
     public List<CarDto> getAllCars(String username) {
@@ -78,5 +80,12 @@ public class CarHealthService {
 
     private String notFoundErrorText (String id) {
         return "Car with id " + id + " not found";
+    }
+
+    public void checkOwner(String carId, String name) {
+        String owner = getOwner(carId);
+        if (!owner.equals(name)) {
+            throw new AccessDeniedException(UNAUTHORIZED_ERROR_MESSAGE);
+        }
     }
 }

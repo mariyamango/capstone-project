@@ -4,7 +4,6 @@ import com.example.backend.dto.*;
 import com.example.backend.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +17,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 @RequestMapping("/api")
 public class CarHealthController {
-    public static final String UNAUTHORIZED_ERROR_MESSAGE = "Unauthorized to view works for this car";
     private final CarHealthService carHealthService;
     private final IdGeneratorService idGeneratorService;
     private final WorkService workService;
@@ -118,9 +116,6 @@ public class CarHealthController {
     }
 
     private void checkOwner(OAuth2User oAuth2User, String carId) {
-        String owner = carHealthService.getOwner(carId);
-        if (!owner.equals(oAuth2User.getName())) {
-            throw new AccessDeniedException(UNAUTHORIZED_ERROR_MESSAGE);
-        }
+        carHealthService.checkOwner(carId, oAuth2User.getName());
     }
 }

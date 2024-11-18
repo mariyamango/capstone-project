@@ -43,8 +43,8 @@ public class AppUserTest {
                 .role("user")
                 .build();
         // WHEN AND THEN
-        assertEquals(appUser1, appUser2); // Equals should be true because the fields are the same
-        assertEquals(appUser1.hashCode(), appUser2.hashCode()); // hashCode should also be equal
+        assertEquals(appUser1, appUser2);
+        assertEquals(appUser1.hashCode(), appUser2.hashCode());
     }
 
     @Test
@@ -63,8 +63,8 @@ public class AppUserTest {
                 .role("admin")
                 .build();
         // WHEN AND THEN
-        assertNotEquals(appUser1, appUser2); // Objects should not be equal as the fields differ
-        assertNotEquals(appUser1.hashCode(), appUser2.hashCode()); // hashCodes should be different
+        assertNotEquals(appUser1, appUser2);
+        assertNotEquals(appUser1.hashCode(), appUser2.hashCode());
     }
 
     @Test

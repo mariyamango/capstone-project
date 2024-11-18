@@ -33,10 +33,7 @@ public class CarHealthController {
 
     @GetMapping("/cars/{id}")
     public CarDto car(@AuthenticationPrincipal OAuth2User oAuth2User, @PathVariable String id) {
-        String owner = carHealthService.getOwner(id);
-        if (!owner.equals(oAuth2User.getName())) {
-            throw new AccessDeniedException(UNAUTHORIZED_ERROR_MESSAGE);
-        }
+        checkOwner(oAuth2User, id);
         return carHealthService.getCarById(id);
     }
 
@@ -59,10 +56,7 @@ public class CarHealthController {
 
     @GetMapping("/works/{carId}")
     public List<WorkDto> work(@AuthenticationPrincipal OAuth2User oAuth2User, @PathVariable String carId) {
-        String owner = carHealthService.getOwner(carId);
-        if (!owner.equals(oAuth2User.getName())) {
-            throw new AccessDeniedException(UNAUTHORIZED_ERROR_MESSAGE);
-        }
+        checkOwner(oAuth2User, carId);
         return workService.getAllWorksByCarId(carId);
     }
 
@@ -89,10 +83,7 @@ public class CarHealthController {
 
     @GetMapping("/works/{carId}/countdowns")
     public WorkSummaryResponseDto getWorkCountdownsByCarId(@AuthenticationPrincipal OAuth2User oAuth2User, @PathVariable String carId) {
-        String owner = carHealthService.getOwner(carId);
-        if (!owner.equals(oAuth2User.getName())) {
-            throw new AccessDeniedException(UNAUTHORIZED_ERROR_MESSAGE);
-        }
+        checkOwner(oAuth2User, carId);
         int currentMileage = carHealthService.getCarById(carId).currentMileage();
         List<WorkDto> works = workService.getAllWorksByCarId(carId);
         Map<String, BigDecimal> totalByType = new HashMap<>();
@@ -124,5 +115,12 @@ public class CarHealthController {
                     );
                 }).toList();
         return new WorkSummaryResponseDto(workCountdowns,totalByType,grandTotal[0]);
+    }
+
+    private void checkOwner(OAuth2User oAuth2User, String carId) {
+        String owner = carHealthService.getOwner(carId);
+        if (!owner.equals(oAuth2User.getName())) {
+            throw new AccessDeniedException(UNAUTHORIZED_ERROR_MESSAGE);
+        }
     }
 }

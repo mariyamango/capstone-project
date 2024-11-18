@@ -30,3 +30,12 @@
     background-color: #181818;
     color: #f8f9fa;
 }
+
+.about-container a {
+    color: #9e54f8;
+    text-decoration: none;
+}
+
+.about-container a:hover {
+    color: #aa70f1;
+}

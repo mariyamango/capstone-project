@@ -5,6 +5,7 @@ import {Route, Routes, useNavigate} from "react-router-dom";
 import Footer from "./pages/components/Footer.tsx";
 import CarDetail from "./pages/CarDetail.tsx";
 import About from "./pages/About.tsx";
+import Chuck from "./pages/Chuck.tsx";
 import {useEffect, useState} from "react";
 import axios, {AxiosError} from "axios";
 import {Button} from "react-bootstrap";
@@ -59,12 +60,14 @@ function App() {
                                 <Route path="/" element={<Home/>}/>
                                 <Route path="/car/:id" element={<CarDetail/>}/>
                                 <Route path="/about" element={<About/>}/>
+                                <Route path="/chuck" element={<Chuck/>}/>
                             </Routes>
                         </main>
                         <Footer/>
                     </div>) :
                 <div className="logout-btn">
-                    <h3 className="mb-4">Please log in to see your car list:</h3>
+                    <h1 className="mb-4">Welcome to CarHealth Monitor!</h1>
+                    <h4 className="mb-4">Please log in to see your car list:</h4>
                     <Button className="mt-3" onClick={loginGithub}>Login with GitHub</Button>
                     <Button className="mt-3" onClick={loginGoogle}>Login with Google</Button>
                 </div>

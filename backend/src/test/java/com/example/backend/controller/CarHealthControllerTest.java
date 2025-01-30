@@ -13,6 +13,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -58,6 +59,9 @@ class CarHealthControllerTest {
     @Autowired
     private IdGeneratorService idGeneratorService;
 
+    @MockBean
+    private ChucksJokeService chucksJokeService;
+
     @Autowired
     private CountdownCalculationService countdownCalculationService;
 
@@ -66,6 +70,16 @@ class CarHealthControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Test
+    void getJoke_shouldGetAJoke() throws Exception {
+        //GIVEN
+        Mockito.when(chucksJokeService.getJoke()).thenReturn("Here is a random joke.");
+        //WHEN THEN
+        mockMvc.perform(get("/api/joke"))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string("Here is a random joke."));
+    }
 
     @Test
     void getAllCars_shouldGetAllCars() throws Exception {

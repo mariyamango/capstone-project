@@ -22,6 +22,12 @@ public class CarHealthController {
     private final WorkService workService;
     private final WorkTypeService workTypeService;
     private final CountdownCalculationService countdownCalculationService;
+    private final ChucksJokeService chucksJokeService;
+
+    @GetMapping("/joke")
+    public String getJoke() {
+        return chucksJokeService.getJoke();
+    }
 
     @GetMapping("/cars")
     public List<CarDto> cars(@AuthenticationPrincipal OAuth2User oAuth2User) {

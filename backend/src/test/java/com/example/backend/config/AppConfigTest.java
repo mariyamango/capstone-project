@@ -8,7 +8,7 @@ import org.springframework.web.client.RestTemplate;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
-public class AppConfigTest {
+class AppConfigTest {
 
     @Autowired
     private RestTemplate restTemplate;

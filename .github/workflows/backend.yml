@@ -9,14 +9,6 @@ jobs:
   build:
     name: Build and analyze
     runs-on: ubuntu-20.04
-    services:
-      mongo:
-        image: mongo:6.0
-        ports:
-          - 27017:27017
-        env:
-          MONGO_INITDB_ROOT_USERNAME: root
-          MONGO_INITDB_ROOT_PASSWORD: example
     steps:
       - uses: actions/checkout@v4
         with:
@@ -42,7 +34,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SPRING_PROFILES_ACTIVE: test
-          MONGO_URI: mongodb://root:example@localhost:27017/test?authSource=admin
         working-directory: backend
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=mariyamango_capstone-project-backend

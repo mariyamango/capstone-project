@@ -1,8 +1,15 @@
-# Specifying the base image
 FROM --platform=linux/amd64 openjdk:21
+
+WORKDIR /app
+
+COPY backend/pom.xml .
+COPY backend/mvnw .
+COPY backend/.mvn .mvn
+RUN chmod +x mvnw && ./mvnw dependency:resolve
+
+COPY backend/. .
+RUN ./mvnw package -DskipTests
+
 EXPOSE 8080
-# Copy jar into image
-ADD ./backend/target/carhealth-monitor.jar carhealth-monitor.jar
-# What command should be run when the container is first launched?
-# java -jar app.jar
-ENTRYPOINT ["java", "-jar", "carhealth-monitor.jar"]
+
+CMD ["java", "-jar", "target/carhealth-monitor.jar"]

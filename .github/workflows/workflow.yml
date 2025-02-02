@@ -13,24 +13,36 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
-      - name: Install MongoDB dependencies and libssl1.1
+
+      - name: Start MongoDB Docker container
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libssl1.1 libssl-dev
-          
-          wget -qO - https://www.mongodb.org/static/pgp/server-5.0.asc | sudo apt-key add -
-          echo "deb [arch=amd64] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-5.0.list
-          sudo apt-get update
-          sudo apt-get install -y mongodb-org
-          
-          if [ ! -f /lib/x86_64-linux-gnu/libcrypto.so ]; then
-            sudo ln -s /lib/x86_64-linux-gnu/libcrypto.so.1.1 /lib/x86_64-linux-gnu/libcrypto.so
-          fi
+          docker run -d -p 27017:27017 --name mongodb mongo:5.0
+
       - name: Build with Maven
         run: mvn -B package --file backend/pom.xml
+
+      - name: Wait for MongoDB to be ready
+        run: |
+          for i in {1..30}; do
+            if docker exec mongodb mongo --eval "print('MongoDB is ready')" > /dev/null 2>&1; then
+              echo "MongoDB is ready"
+              break
+            fi
+            echo "Waiting for MongoDB..."
+            sleep 2
+          done
+
+      - name: Run tests with Maven
+        run: mvn test --file backend/pom.xml
+
+      - name: Stop MongoDB Docker container
+        run: |
+          docker stop mongodb
+          docker rm mongodb

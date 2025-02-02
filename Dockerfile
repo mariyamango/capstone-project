@@ -5,10 +5,13 @@ WORKDIR /app
 COPY backend/pom.xml .
 COPY backend/mvnw .
 COPY backend/.mvn .mvn
-RUN chmod +x mvnw && ./mvnw dependency:resolve
+
+RUN chmod +x mvnw
+
+RUN ./mvnw dependency:resolve
 
 COPY backend/. .
-RUN ./mvnw package -DskipTests
+RUN chmod +x mvnw && ./mvnw package -DskipTests
 
 EXPOSE 8080
 

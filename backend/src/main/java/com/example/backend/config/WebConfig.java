@@ -13,6 +13,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/car/{id}").setViewName(FORWARD_INDEX_HTML);
         registry.addViewController("/about").setViewName(FORWARD_INDEX_HTML);
+        registry.addViewController("/chuck").setViewName(FORWARD_INDEX_HTML);
         registry.addViewController("/").setViewName(FORWARD_INDEX_HTML);
     }
 }

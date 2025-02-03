@@ -30,6 +30,12 @@ class WebConfigTest {
     }
 
     @Test
+    void testRedirectChuck() throws Exception {
+        mockMvc.perform(get("/chuck"))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
     void testRedirectHome() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(MockMvcResultMatchers.status().isOk());
